@@ -49,7 +49,9 @@ as fotos caem na **sua** pasta, e nenhuma senha da sua conta fica dentro do site
      com a pasta "Afrovisao").
    - `SENHA_ADM`: a senha que abre a página de administração. Neste repositório
      ela já vem preenchida. Vale o que estiver escrito nessa linha.
-   - `LIBERADO_DE_INICIO`: deixe `false` — a atividade começa bloqueada.
+   - `LIBERADO_DE_INICIO`: vem `true`, para o app já funcionar assim que você
+     publicar. Depois quem manda é o painel. Troque para `false` se preferir que
+     a atividade comece fechada.
    - `CRIAR_SUBPASTA_POR_TURMA`: deixe `true` para separar as fotos por turma.
    - `ID_DA_PLANILHA` (opcional): ID de uma planilha para registrar cada envio.
 
@@ -77,7 +79,7 @@ as fotos caem na **sua** pasta, e nenhuma senha da sua conta fica dentro do site
 tudo o que importa, sem revelar a senha:
 
 ```json
-{"ok":true, "aberto":false, "senhaDefinida":true, "pasta":"Afrovisao", "versao":2}
+{"ok":true, "aberto":true, "senhaDefinida":true, "pasta":"Afrovisao", "versao":2}
 ```
 
 - `senhaDefinida: false` → a senha não chegou ao ar (falta publicar nova versão).

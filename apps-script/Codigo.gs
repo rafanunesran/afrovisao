@@ -22,8 +22,9 @@ const CONFIG = {
   //  "senhaAdm", em Configurações do projeto → Propriedades do script.)
   SENHA_ADM: 'P3ralt@',
 
-  // Como a atividade começa, caso nunca tenha sido ligada: false = bloqueada.
-  LIBERADO_DE_INICIO: false,
+  // Como a atividade começa, antes de você usar o painel pela primeira vez.
+  // true = já sai funcionando; depois é o painel que manda (liberar/bloquear).
+  LIBERADO_DE_INICIO: true,
 
   // Cria uma subpasta para cada turma dentro da pasta principal.
   CRIAR_SUBPASTA_POR_TURMA: true,
