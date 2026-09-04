@@ -11,10 +11,10 @@
 
 const CONFIG = {
   // ID da pasta do Drive: abra a pasta e copie o trecho depois de /folders/ na barra de endereço.
-  ID_DA_PASTA: 'COLE_AQUI_O_ID_DA_PASTA',
+  ID_DA_PASTA: '1LvB1hg2AzyjWqijzZ_u06I4QofnKXsu9',   // pasta "Afrovisao"
 
-  // A mesma senha precisa ser digitada no aplicativo (engrenagem > Senha do envio).
-  SENHA: 'troque-esta-senha',
+  // A mesma senha precisa estar em js/config.js (ou ser digitada na engrenagem do app).
+  SENHA: 'afrovisao-cdj3f5',
 
   // Cria uma subpasta para cada turma dentro da pasta principal.
   CRIAR_SUBPASTA_POR_TURMA: true,
@@ -129,5 +129,5 @@ function registrarNaPlanilha(dados, arquivo, pasta) {
 function conferirConfiguracao() {
   const pasta = DriveApp.getFolderById(CONFIG.ID_DA_PASTA);
   Logger.log('Pasta encontrada: %s', pasta.getName());
-  Logger.log('Senha configurada: %s', CONFIG.SENHA === 'troque-esta-senha' ? 'ATENÇÃO, ainda é a padrão!' : 'ok');
+  Logger.log('Senha configurada: %s', CONFIG.SENHA ? 'ok' : 'ATENÇÃO, está vazia!');
 }

@@ -35,7 +35,9 @@ as fotos caem na **sua** pasta, e nenhuma senha da sua conta fica dentro do site
    Apague o conteúdo do arquivo `Código.gs` e cole todo o conteúdo de
    [`apps-script/Codigo.gs`](apps-script/Codigo.gs) deste repositório.
 
-3. **Preencha a configuração** no topo do script:
+3. **Preencha a configuração** no topo do script (neste repositório o arquivo já
+   vem preenchido para a pasta "Afrovisao" — se for essa a pasta, é só colar e
+   seguir para o passo 4):
    - `ID_DA_PASTA`: o ID copiado no passo 1.
    - `SENHA`: invente uma senha (ex.: `afrovisao-9ano-2026`). Ela evita que
      estranhos que descubram o link joguem arquivos na sua pasta.
