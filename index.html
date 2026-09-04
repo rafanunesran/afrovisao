@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12100e">
+<title>AfroVisão — Câmera</title>
+<meta name="description" content="Aplicativo de câmera que envia as fotos direto para uma pasta no Google Drive.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icone-192.png">
+<link rel="apple-touch-icon" href="icons/icone-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+
+<header class="topo">
+  <h1 id="tituloApp">AfroVisão</h1>
+  <button id="btnConfig" class="icone" type="button" aria-label="Configurações">&#9881;</button>
+</header>
+
+<!-- ETAPA 1: identificação -->
+<section id="telaIdentificacao" class="tela ativa">
+  <div class="cartao">
+    <h2>Quem está fotografando?</h2>
+    <p class="ajuda">Esses dados entram no nome do arquivo enviado ao Drive.</p>
+    <label for="campoNome">Nome</label>
+    <input id="campoNome" type="text" autocomplete="name" placeholder="Ex.: Maria Silva" maxlength="60">
+    <label for="campoTurma">Turma</label>
+    <input id="campoTurma" type="text" autocomplete="off" placeholder="Ex.: 9A" maxlength="20">
+    <button id="btnComecar" class="primario" type="button">Abrir a câmera</button>
+    <p id="avisoIdentificacao" class="erro" hidden>Preencha o nome e a turma.</p>
+  </div>
+</section>
+
+<!-- ETAPA 2: câmera -->
+<section id="telaCamera" class="tela">
+  <div class="palco">
+    <video id="video" playsinline autoplay muted></video>
+    <canvas id="canvas" hidden></canvas>
+    <div id="avisoCamera" class="avisoPalco" hidden>
+      <p id="textoAvisoCamera">Não foi possível abrir a câmera.</p>
+      <label class="secundario" for="campoArquivo">Tirar foto pelo aplicativo do celular</label>
+      <input id="campoArquivo" type="file" accept="image/*" capture="environment" multiple hidden>
+    </div>
+  </div>
+
+  <div class="controles">
+    <button id="btnTrocarCamera" class="icone grande" type="button" aria-label="Trocar de câmera">&#8646;</button>
+    <button id="btnDisparar" class="disparador" type="button" aria-label="Tirar foto"><span></span></button>
+    <button id="btnGaleria" class="icone grande" type="button" aria-label="Ver fotos tiradas">
+      <span id="contadorFila" class="contador">0</span>
+    </button>
+  </div>
+  <p id="dicaCamera" class="dica">Toque no círculo para fotografar.</p>
+</section>
+
+<!-- ETAPA 3: fila de envio -->
+<section id="telaGaleria" class="tela">
+  <div class="cabecalhoGaleria">
+    <button id="btnVoltarCamera" class="secundario" type="button">&#8592; Câmera</button>
+    <span id="resumoFila">Nenhuma foto</span>
+  </div>
+  <div id="grade" class="grade"></div>
+  <div class="rodape">
+    <button id="btnEnviar" class="primario" type="button">Enviar para o Drive</button>
+    <p id="statusEnvio" class="status" role="status" aria-live="polite"></p>
+  </div>
+</section>
+
+<!-- Configurações -->
+<dialog id="dialogoConfig">
+  <form method="dialog" class="cartao">
+    <h2>Configurações</h2>
+    <label for="campoEndpoint">Endereço do aplicativo do Google (Apps Script)</label>
+    <input id="campoEndpoint" type="url" placeholder="https://script.google.com/macros/s/.../exec" inputmode="url">
+    <p class="ajuda">Cole aqui a URL gerada ao publicar o script. Veja o passo a passo no README.</p>
+    <label for="campoSenha">Senha do envio</label>
+    <input id="campoSenha" type="text" placeholder="mesma senha configurada no script" autocomplete="off">
+    <label for="campoQualidade">Qualidade da imagem</label>
+    <select id="campoQualidade">
+      <option value="1200">Leve (1200 px)</option>
+      <option value="1600" selected>Média (1600 px)</option>
+      <option value="2400">Alta (2400 px)</option>
+    </select>
+    <div class="linhaBotoes">
+      <button id="btnTestarConexao" class="secundario" type="button">Testar conexão</button>
+      <button id="btnSalvarConfig" class="primario" type="button">Salvar</button>
+    </div>
+    <p id="statusConfig" class="status" role="status" aria-live="polite"></p>
+    <button id="btnTrocarAluno" class="linkPerigo" type="button">Trocar de aluno</button>
+    <button class="fechar" value="fechar" aria-label="Fechar">&times;</button>
+  </form>
+</dialog>
+
+<script src="js/config.js"></script>
+<script src="js/banco.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
