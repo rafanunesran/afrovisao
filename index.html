@@ -19,17 +19,6 @@
   <button id="btnConfig" class="icone" type="button" aria-label="Configurações">&#9881;</button>
 </header>
 
-<!-- Tela de bloqueio: a atividade está fechada pela professora ou professor -->
-<section id="telaBloqueada" class="tela">
-  <div class="cartao centralizado">
-    <span class="cadeado" aria-hidden="true">&#128274;</span>
-    <h2>Atividade bloqueada</h2>
-    <p id="recadoBloqueio" class="ajuda">A câmera será liberada pela professora ou professor.</p>
-    <button id="btnVerificarDeNovo" class="primario" type="button">Verificar de novo</button>
-    <p id="statusBloqueio" class="status" role="status" aria-live="polite"></p>
-  </div>
-</section>
-
 <!-- ETAPA 1: identificação -->
 <section id="telaIdentificacao" class="tela ativa">
   <div class="cartao">
@@ -83,7 +72,6 @@
 <dialog id="dialogoConfig">
   <form method="dialog" class="cartao">
     <h2>Configurações</h2>
-    <p id="estadoServidor" class="ajuda">Servidor: verificando…</p>
     <label for="campoQualidade">Qualidade da imagem</label>
     <select id="campoQualidade">
       <option value="1200">Leve (1200 px)</option>
@@ -97,7 +85,18 @@
     <p id="statusConfig" class="status" role="status" aria-live="polite"></p>
     <button id="btnAtualizarApp" class="secundario largura" type="button">Atualizar o aplicativo</button>
     <p class="ajuda">Use se este aparelho estiver com uma versão antiga do site.</p>
-    <p class="ajuda linhaAdmin"><a href="admin.html">Página de administração</a></p>
+    <details id="detalhesAvancado">
+      <summary>Avançado</summary>
+      <pre id="diagnostico" class="diagnostico">Consultando o script…</pre>
+      <p class="ajuda">Se você publicou uma implantação nova do Apps Script, cole aqui
+        a URL terminada em <code>/exec</code>. Vale só neste aparelho.</p>
+      <input id="campoEndpointApp" type="url" inputmode="url"
+             placeholder="https://script.google.com/macros/s/.../exec">
+      <div class="linhaBotoes">
+        <button id="btnUsarEndereco" class="secundario" type="button">Usar este endereço</button>
+        <button id="btnEnderecoPadrao" class="secundario" type="button">Voltar ao padrão</button>
+      </div>
+    </details>
     <button id="btnTrocarAluno" class="linkPerigo" type="button">Trocar de aluno</button>
     <button class="fechar" value="fechar" aria-label="Fechar">&times;</button>
   </form>

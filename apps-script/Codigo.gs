@@ -1,14 +1,14 @@
 /**
- * AfroVisão — recebedor de fotos e interruptor da atividade.
+ * AfroVisão — recebedor de fotos.
  *
  * Este arquivo NÃO roda no site: ele é colado no Google Apps Script
  * (script.google.com) e publicado como "Aplicativo da Web". O script roda
  * com a SUA conta Google, por isso as fotos caem na SUA pasta do Drive e
- * os alunos não precisam fazer login nem digitar senha.
+ * os alunos não precisam de login nem de senha.
  *
- * Quem decide se a atividade está aberta é a página de administração
- * (admin.html), protegida pela SENHA_ADM abaixo. Enquanto estiver bloqueada,
- * o aplicativo dos alunos nem abre a câmera.
+ * Não há senha, painel nem interruptor: com a implantação no ar, o aplicativo
+ * envia. Para encerrar a atividade, desative a implantação em
+ * Implantar → Gerenciar implantações → ✏️ → Desativar.
  *
  * Passo a passo completo no README.md do projeto.
  */
@@ -16,15 +16,6 @@
 const CONFIG = {
   // ID da pasta do Drive: abra a pasta e copie o trecho depois de /folders/ na barra de endereço.
   ID_DA_PASTA: '1LvB1hg2AzyjWqijzZ_u06I4QofnKXsu9',   // pasta "Afrovisao"
-
-  // Senha da página de administração. Vale o que estiver escrito aqui.
-  // (Se deixar o texto do modelo, o script procura a senha na propriedade
-  //  "senhaAdm", em Configurações do projeto → Propriedades do script.)
-  SENHA_ADM: 'P3ralt@',
-
-  // Como a atividade começa, antes de você usar o painel pela primeira vez.
-  // true = já sai funcionando; depois é o painel que manda (liberar/bloquear).
-  LIBERADO_DE_INICIO: true,
 
   // Cria uma subpasta para cada turma dentro da pasta principal.
   CRIAR_SUBPASTA_POR_TURMA: true,
@@ -38,107 +29,31 @@ const CONFIG = {
 
 // Sobe de número quando o formato das respostas muda. O site avisa se a versão
 // publicada estiver velha, em vez de mostrar um erro sem sentido.
-const VERSAO_SCRIPT = 2;
+const VERSAO_SCRIPT = 3;
 
-// Nomes das anotações guardadas pelo script entre uma execução e outra.
-const CHAVES = {
-  SENHA_ADM: 'senhaAdm',     // cadastrada à mão nas propriedades do script
-  ABERTO_ATE: 'abertoAte',   // 0 = bloqueado, -1 = aberto sem prazo, ou um horário limite
-  RECADO: 'recado',
-  TOTAL: 'total',
-  ULTIMO_ENVIO: 'ultimoEnvio',
-  ULTIMA_MUDANCA: 'ultimaMudanca'
-};
-
-/* ------------------------------------------------------------------ estado */
-
-function anotacoes() {
-  return PropertiesService.getScriptProperties();
-}
-
-/** A senha escrita no código manda; a propriedade é só a reserva.
- *  Assim uma propriedade esquecida ou digitada errada não passa por cima
- *  do valor que está à vista neste arquivo. */
-function senhaAdministrador() {
-  if (CONFIG.SENHA_ADM && CONFIG.SENHA_ADM !== 'TROQUE-ESTA-SENHA-DE-ADMINISTRADOR') {
-    return String(CONFIG.SENHA_ADM);
-  }
-  const guardada = anotacoes().getProperty(CHAVES.SENHA_ADM);
-  return guardada ? String(guardada) : '';
-}
-
-function lerAbertoAte() {
-  const guardado = anotacoes().getProperty(CHAVES.ABERTO_ATE);
-  if (guardado === null) return CONFIG.LIBERADO_DE_INICIO ? -1 : 0;
-  return Number(guardado);
-}
-
-/** A atividade está aberta agora? Um prazo vencido bloqueia sozinho. */
-function estaAberto() {
-  const ate = lerAbertoAte();
-  if (ate === -1) return true;
-  if (ate <= 0) return false;
-  return Date.now() < ate;
-}
-
-function estadoAtual() {
-  const ate = lerAbertoAte();
-  const aberto = estaAberto();
-  return {
-    ok: true,
-    aberto: aberto,
-    semPrazo: aberto && ate === -1,
-    abertoAte: aberto && ate > 0 ? new Date(ate).toISOString() : null,
-    recado: anotacoes().getProperty(CHAVES.RECADO) || '',
-    total: Number(anotacoes().getProperty(CHAVES.TOTAL) || 0),
-    ultimoEnvio: anotacoes().getProperty(CHAVES.ULTIMO_ENVIO) || '',
-    ultimaMudanca: anotacoes().getProperty(CHAVES.ULTIMA_MUDANCA) || ''
-  };
-}
+const CHAVES = { TOTAL: 'total', ULTIMO_ENVIO: 'ultimoEnvio' };
 
 /* --------------------------------------------------------------- entradas */
 
-/** Chamado pelo aplicativo dos alunos e pela página de administração. */
+/** Chamado pelo aplicativo a cada foto. */
 function doPost(requisicao) {
   try {
-    const dados = JSON.parse(requisicao.postData.contents);
-
-    // 1. Consulta pública: o app pergunta se pode fotografar. Não exige senha.
-    if (dados.acao === 'estado') {
-      return responder(estadoAtual());
-    }
-
-    // 2. Comandos da professora ou professor. Exigem a senha de administrador.
-    if (dados.acao === 'admin') {
-      return responder(comandoDeAdmin(dados));
-    }
-
-    // 3. Envio de foto. Só passa com a atividade aberta.
-    return responder(receberFoto(dados));
+    return responder(receberFoto(JSON.parse(requisicao.postData.contents)));
   } catch (erro) {
     return responder({ ok: false, erro: String(erro && erro.message ? erro.message : erro) });
   }
 }
 
-/** Abrir a URL do script no navegador mostra se ele está no ar. */
+/** Abrir a URL do script no navegador mostra se está tudo certo. */
 function doGet() {
-  const estado = estadoAtual();
+  const props = PropertiesService.getScriptProperties();
   return responder({
     ok: true,
     mensagem: 'Recebedor do AfroVisão está funcionando.',
-    aberto: estado.aberto,
-    senhaDefinida: !!senhaAdministrador(),   // confere sem revelar a senha
-    pasta: nomeDaPasta()
+    pasta: nomeDaPasta(),
+    total: Number(props.getProperty(CHAVES.TOTAL) || 0),
+    ultimoEnvio: props.getProperty(CHAVES.ULTIMO_ENVIO) || ''
   });
-}
-
-/** Nome da pasta de destino, ou o motivo de não dar para abri-la. */
-function nomeDaPasta() {
-  try {
-    return DriveApp.getFolderById(CONFIG.ID_DA_PASTA).getName();
-  } catch (erro) {
-    return 'ERRO: ' + String(erro && erro.message ? erro.message : erro);
-  }
 }
 
 function responder(objeto) {
@@ -148,52 +63,12 @@ function responder(objeto) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-/* --------------------------------------------------------- administração */
-
-function comandoDeAdmin(dados) {
-  const senha = senhaAdministrador();
-  if (!senha) {
-    return { ok: false, erro: 'Falta definir a senha de administrador. No editor do Apps Script: ' +
-      'Configurações do projeto → Propriedades do script → adicionar "senhaAdm".' };
-  }
-  if (senha !== String(dados.senhaAdm || '')) {
-    return { ok: false, erro: 'Senha de administrador incorreta.' };
-  }
-
-  const props = anotacoes();
-
-  if (dados.comando === 'liberar') {
-    // minutos ausente ou 0 significa "aberto até eu bloquear".
-    const minutos = Number(dados.minutos || 0);
-    props.setProperty(CHAVES.ABERTO_ATE, minutos > 0 ? String(Date.now() + minutos * 60000) : '-1');
-    props.setProperty(CHAVES.ULTIMA_MUDANCA, new Date().toISOString());
-  } else if (dados.comando === 'bloquear') {
-    props.setProperty(CHAVES.ABERTO_ATE, '0');
-    props.setProperty(CHAVES.ULTIMA_MUDANCA, new Date().toISOString());
-  } else if (dados.comando === 'recado') {
-    props.setProperty(CHAVES.RECADO, String(dados.recado || '').slice(0, 300));
-  } else if (dados.comando === 'zerarContagem') {
-    props.setProperty(CHAVES.TOTAL, '0');
-  } else if (dados.comando !== 'consultar') {
-    return { ok: false, erro: 'Comando desconhecido: ' + dados.comando };
-  }
-
-  const estado = estadoAtual();
-  estado.pasta = DriveApp.getFolderById(CONFIG.ID_DA_PASTA).getName();
-  estado.linkDaPasta = 'https://drive.google.com/drive/folders/' + CONFIG.ID_DA_PASTA;
-  return estado;
-}
-
 /* ------------------------------------------------------- recebendo fotos */
 
 function receberFoto(dados) {
-  if (!estaAberto()) {
-    return {
-      ok: false,
-      bloqueado: true,
-      erro: 'A atividade está bloqueada pela professora ou professor.',
-      recado: anotacoes().getProperty(CHAVES.RECADO) || ''
-    };
+  // Consulta que o aplicativo faz ao abrir, só para confirmar que o script responde.
+  if (dados.acao === 'estado') {
+    return { ok: true, pasta: nomeDaPasta() };
   }
   if (!dados.arquivo) {
     return { ok: false, erro: 'Nenhuma imagem foi recebida.' };
@@ -220,13 +95,22 @@ function receberFoto(dados) {
     ' — foto tirada em ' + (dados.tiradaEm || 'data desconhecida')
   );
 
-  const props = anotacoes();
+  const props = PropertiesService.getScriptProperties();
   props.setProperty(CHAVES.TOTAL, String(Number(props.getProperty(CHAVES.TOTAL) || 0) + 1));
   props.setProperty(CHAVES.ULTIMO_ENVIO, new Date().toISOString());
 
   registrarNaPlanilha(dados, arquivo, pastaDestino);
 
   return { ok: true, nome: arquivo.getName(), link: arquivo.getUrl(), pasta: pastaDestino.getName() };
+}
+
+/** Nome da pasta de destino, ou o motivo de não dar para abri-la. */
+function nomeDaPasta() {
+  try {
+    return DriveApp.getFolderById(CONFIG.ID_DA_PASTA).getName();
+  } catch (erro) {
+    return 'ERRO: ' + String(erro && erro.message ? erro.message : erro);
+  }
 }
 
 function pastaDaTurma(pastaPrincipal, turma) {
@@ -262,10 +146,5 @@ function registrarNaPlanilha(dados, arquivo, pasta) {
 
 /** Execute uma vez pelo editor do Apps Script para conferir a configuração. */
 function conferirConfiguracao() {
-  const pasta = DriveApp.getFolderById(CONFIG.ID_DA_PASTA);
-  Logger.log('Pasta encontrada: %s', pasta.getName());
-  const daPropriedade = !!anotacoes().getProperty(CHAVES.SENHA_ADM);
-  Logger.log('Senha de administrador: %s', !senhaAdministrador() ? 'ATENÇÃO, não foi definida!'
-    : (daPropriedade ? 'definida nas propriedades do script' : 'definida no código'));
-  Logger.log('Atividade agora: %s', estaAberto() ? 'ABERTA' : 'BLOQUEADA');
+  Logger.log('Pasta de destino: %s', nomeDaPasta());
 }

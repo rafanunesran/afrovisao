@@ -4,15 +4,16 @@
 
   const cfg = window.APP_CONFIG || {};
   const CHAVE_PREFS = 'afrovisao:prefs';
+  const CHAVE_ENDERECO = 'afrovisao:endereco';
 
   const el = {};
-  ['tituloApp', 'btnConfig', 'telaBloqueada', 'telaIdentificacao', 'telaCamera', 'telaGaleria',
-   'recadoBloqueio', 'btnVerificarDeNovo', 'statusBloqueio',
+  ['tituloApp', 'btnConfig', 'telaIdentificacao', 'telaCamera', 'telaGaleria',
    'campoNome', 'campoTurma', 'btnComecar', 'avisoIdentificacao',
    'video', 'canvas', 'avisoCamera', 'textoAvisoCamera', 'campoArquivo',
    'btnTrocarCamera', 'btnDisparar', 'btnGaleria', 'contadorFila', 'dicaCamera',
    'btnVoltarCamera', 'resumoFila', 'grade', 'btnEnviar', 'statusEnvio',
-   'dialogoConfig', 'estadoServidor', 'campoQualidade', 'btnAtualizarApp',
+   'dialogoConfig', 'campoQualidade', 'btnAtualizarApp',
+   'detalhesAvancado', 'diagnostico', 'campoEndpointApp', 'btnUsarEndereco', 'btnEnderecoPadrao',
    'btnTestarConexao', 'btnSalvarConfig', 'statusConfig', 'btnTrocarAluno'
   ].forEach(function (id) { el[id] = document.getElementById(id); });
 
@@ -48,10 +49,9 @@
   /* ------------------------------------------------------------- navegação */
 
   function mostrarTela(nome) {
-    [el.telaBloqueada, el.telaIdentificacao, el.telaCamera, el.telaGaleria].forEach(function (t) {
+    [el.telaIdentificacao, el.telaCamera, el.telaGaleria].forEach(function (t) {
       t.classList.remove('ativa');
     });
-    if (nome === 'bloqueada') el.telaBloqueada.classList.add('ativa');
     if (nome === 'identificacao') el.telaIdentificacao.classList.add('ativa');
     if (nome === 'camera') el.telaCamera.classList.add('ativa');
     if (nome === 'galeria') el.telaGaleria.classList.add('ativa');
@@ -318,8 +318,14 @@
            carimboDeHora(foto.criadaEm) + '.jpg';
   }
 
+  function enderecoDoScript() {
+    let proprio = '';
+    try { proprio = localStorage.getItem(CHAVE_ENDERECO) || ''; } catch (e) { proprio = ''; }
+    return (proprio || cfg.ENDPOINT || '').trim();
+  }
+
   function conversar(corpo) {
-    const endereco = (cfg.ENDPOINT || '').trim();
+    const endereco = enderecoDoScript();
     if (!endereco) {
       return Promise.reject(new Error('Este aparelho está com uma versão antiga do site. ' +
         'Abra a engrenagem e toque em "Atualizar o aplicativo".'));
@@ -342,15 +348,12 @@
         } catch (e) {
           throw new Error('Resposta inesperada do Google. Confirme se a implantação está como "Qualquer pessoa".');
         }
-        if (!(Number(dados.versao) >= 2)) {
+        if (!(Number(dados.versao) >= 3)) {
           throw new Error('O script publicado no Google está numa versão antiga. ' +
             'No editor do Apps Script: Implantar → Gerenciar implantações → ✏️ → Versão: Nova versão.');
         }
         if (!resposta.ok || !dados.ok) {
-          const falha = new Error(dados.erro || ('Erro ' + resposta.status));
-          falha.bloqueado = dados.bloqueado === true;
-          falha.recado = dados.recado || '';
-          throw falha;
+          throw new Error(dados.erro || ('Erro ' + resposta.status));
         }
         return dados;
       });
@@ -403,12 +406,6 @@
       });
     }, Promise.resolve()).then(function () {
       estado.enviando = false;
-      if (ultimoErro && ultimoErro.bloqueado) {
-        // A atividade foi fechada no meio do envio: as fotos ficam guardadas na fila.
-        desenharGaleria();
-        aplicarEstado({ aberto: false, recado: ultimoErro.recado });
-        return;
-      }
       if (ultimoErro) {
         el.statusEnvio.className = 'status ruim';
         el.statusEnvio.textContent = enviadas + ' enviada(s). Algumas falharam: ' + ultimoErro.message;
@@ -423,9 +420,7 @@
   /* --------------------------------------------------------- configurações */
 
   function abrirConfig() {
-    el.estadoServidor.textContent = (cfg.ENDPOINT || '').trim()
-      ? 'Servidor: configurado.'
-      : 'Servidor: NÃO configurado — toque em "Atualizar o aplicativo".';
+    diagnosticar();
     el.campoQualidade.value = String(estado.prefs.larguraMaxima);
     el.statusConfig.textContent = '';
     el.statusConfig.className = 'status';
@@ -449,8 +444,7 @@
     conversar({ acao: 'estado' })
       .then(function (dados) {
         el.statusConfig.className = 'status ok';
-        el.statusConfig.textContent = 'Conectado. A atividade está ' +
-          (dados.aberto ? 'liberada.' : 'bloqueada no momento.');
+        el.statusConfig.textContent = 'Conectado à pasta "' + (dados.pasta || 'do Drive') + '".';
       })
       .catch(function (erro) {
         el.statusConfig.className = 'status ruim';
@@ -458,72 +452,46 @@
       });
   }
 
-  /* -------------------------------------------- interruptor da atividade */
+  /* ----------------------------------------------------------- diagnóstico */
 
-  /* Pergunta ao script se a atividade está liberada.
-     Sem resposta clara, o app não abre a câmera: é a professora ou professor
-     quem libera, e na dúvida o certo é ficar fechado. */
-  function consultarEstado() {
-    if (estado.verificando) return Promise.resolve(null);
-    estado.verificando = true;
-    return conversar({ acao: 'estado' })
-      .then(function (dados) {
-        estado.verificando = false;
-        return dados;
-      })
-      .catch(function (erro) {
-        estado.verificando = false;
-        throw erro;
-      });
-  }
+  /* Mostra com qual script o aparelho está falando e o que ele responde.
+     É o que separa "erro no aplicativo" de "publicação antiga no Google". */
+  function diagnosticar() {
+    const endereco = enderecoDoScript();
+    const proprio = endereco !== (cfg.ENDPOINT || '').trim();
+    const fim = endereco ? '…' + endereco.slice(-24) : '(nenhum)';
 
-  function aplicarEstado(dados) {
-    estado.aberto = dados.aberto === true;
-    if (estado.aberto) return true;
-    el.recadoBloqueio.textContent = dados.recado ||
-      'A câmera será liberada pela professora ou professor.';
-    el.statusBloqueio.textContent = '';
-    el.statusBloqueio.className = 'status';
-    mostrarTela('bloqueada');
-    return false;
-  }
+    el.campoEndpointApp.value = proprio ? endereco : '';
+    el.detalhesAvancado.open = proprio;
+    el.diagnostico.textContent = 'Script: ' + fim + (proprio ? '  (deste aparelho)' : '') + '\nConsultando…';
+    if (!endereco) {
+      el.diagnostico.textContent = 'Nenhum endereço de script configurado.';
+      return;
+    }
 
-  /* Entrada no app: só passa da tela de cadeado com um "liberado" do script. */
-  function entrarNoApp() {
-    el.statusBloqueio.className = 'status';
-    el.statusBloqueio.textContent = 'Verificando…';
-    el.btnVerificarDeNovo.disabled = true;
-    return consultarEstado()
-      .then(function (dados) {
-        el.btnVerificarDeNovo.disabled = false;
-        if (!dados || !aplicarEstado(dados)) return;
-        mostrarTela(estado.prefs.nome && estado.prefs.turma ? 'camera' : 'identificacao');
-      })
-      .catch(function (erro) {
-        el.btnVerificarDeNovo.disabled = false;
-        estado.aberto = null;
-        el.recadoBloqueio.textContent = 'Não foi possível falar com o servidor da atividade.';
-        el.statusBloqueio.className = 'status ruim';
-        el.statusBloqueio.textContent = erro.message;
-        mostrarTela('bloqueada');
-      });
-  }
-
-  /* De tempos em tempos confere se a atividade foi fechada durante a aula.
-     Uma falha de rede aqui NÃO tranca o aluno: só um "bloqueado" vindo do
-     script fecha a câmera, para que um sinal ruim não atrapalhe o trabalho. */
-  function vigiarEstado() {
-    const naCamera = el.telaCamera.classList.contains('ativa');
-    const naGaleria = el.telaGaleria.classList.contains('ativa');
-    if (document.hidden || estado.enviando || (!naCamera && !naGaleria)) return;
-    consultarEstado()
-      .then(function (dados) {
-        if (dados && dados.aberto === false) {
-          pararCamera();
-          aplicarEstado(dados);
+    fetch(endereco, { method: 'GET', mode: 'cors', redirect: 'follow' })
+      .then(function (r) { return r.text(); })
+      .then(function (texto) {
+        let d;
+        try { d = JSON.parse(texto); } catch (e) {
+          throw new Error('não respondeu em JSON (a implantação está como "Qualquer pessoa"?)');
         }
+        const linhas = ['Script: ' + fim + (proprio ? '  (deste aparelho)' : '')];
+        if (!(Number(d.versao) >= 3)) {
+          linhas.push('Código publicado: ANTIGO ✗');
+          linhas.push('→ No editor do Apps Script: salve o arquivo e publique');
+          linhas.push('  uma nova versão. Se criou uma implantação nova, cole');
+          linhas.push('  a URL dela no campo abaixo.');
+        } else {
+          linhas.push('Código publicado: atualizado ✓');
+          linhas.push('Pasta do Drive: ' + (d.pasta || '?'));
+          linhas.push('Fotos já recebidas: ' + (d.total || 0));
+        }
+        el.diagnostico.textContent = linhas.join('\n');
       })
-      .catch(function () { /* sinal ruim: mantém a aula andando */ });
+      .catch(function (erro) {
+        el.diagnostico.textContent = 'Script: ' + fim + '\nNão respondeu: ' + (erro.message || 'sem conexão');
+      });
   }
 
   /* ---------------------------------------------------------------- eventos */
@@ -540,10 +508,7 @@
     estado.prefs.turma = turma;
     gravarPrefs();
     mostrarTela('camera');
-    vigiarEstado();
   });
-
-  el.btnVerificarDeNovo.addEventListener('click', entrarNoApp);
 
   el.btnDisparar.addEventListener('click', tirarFoto);
   el.btnTrocarCamera.addEventListener('click', trocarCamera);
@@ -569,6 +534,21 @@
     el.dialogoConfig.close();
   });
   el.btnTestarConexao.addEventListener('click', testarConexao);
+
+  el.btnUsarEndereco.addEventListener('click', function () {
+    const novo = el.campoEndpointApp.value.trim();
+    try {
+      if (novo) localStorage.setItem(CHAVE_ENDERECO, novo);
+      else localStorage.removeItem(CHAVE_ENDERECO);
+    } catch (e) { /* modo privado */ }
+    diagnosticar();
+  });
+
+  el.btnEnderecoPadrao.addEventListener('click', function () {
+    try { localStorage.removeItem(CHAVE_ENDERECO); } catch (e) { /* modo privado */ }
+    el.campoEndpointApp.value = '';
+    diagnosticar();
+  });
   el.btnAtualizarApp.addEventListener('click', function () {
     el.statusConfig.className = 'status';
     el.statusConfig.textContent = 'Atualizando…';
@@ -604,10 +584,8 @@
     .catch(function () { estado.fotos = []; })
     .then(function () {
       atualizarContador();
-      entrarNoApp();
+      mostrarTela(estado.prefs.nome && estado.prefs.turma ? 'camera' : 'identificacao');
     });
-
-  setInterval(vigiarEstado, 60000);
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
