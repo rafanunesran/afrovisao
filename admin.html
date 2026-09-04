@@ -31,6 +31,22 @@
       </label>
       <button id="btnEntrar" class="primario" type="button">Entrar</button>
       <p id="statusEntrada" class="status" role="status" aria-live="polite"></p>
+
+      <hr class="divisor">
+      <h3 class="subtitulo">Diagnóstico</h3>
+      <pre id="diagnostico" class="diagnostico">Consultando o script…</pre>
+      <details id="detalhesEndereco">
+        <summary>Trocar o endereço do script</summary>
+        <p class="ajuda">Cole aqui a URL terminada em <code>/exec</code> da implantação
+          mais recente. Vale só neste aparelho — me avise para eu colocá-la no site.</p>
+        <input id="campoEndpointAdm" type="url" inputmode="url"
+               placeholder="https://script.google.com/macros/s/.../exec">
+        <div class="linhaBotoes">
+          <button id="btnUsarEndereco" class="secundario" type="button">Usar este endereço</button>
+          <button id="btnEnderecoPadrao" class="secundario" type="button">Voltar ao padrão</button>
+        </div>
+      </details>
+      <button id="btnAtualizarEntrada" class="secundario largura" type="button">Atualizar o aplicativo</button>
     </div>
   </section>
 

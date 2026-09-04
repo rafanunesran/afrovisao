@@ -75,7 +75,13 @@ as fotos caem na **sua** pasta, e nenhuma senha da sua conta fica dentro do site
 > → Versão: **Nova versão***. Assim a URL continua a mesma. Sem isso, a URL
 > continua servindo o código antigo — é o tropeço mais comum deste projeto.
 
-**Como conferir se deu certo:** abra a URL `/exec` no navegador. A resposta mostra
+**Como conferir se deu certo:** abra `admin.html` — a tela de entrada tem um
+bloco **Diagnóstico** que diz com qual script está falando, se o código publicado
+é o atual, se a senha chegou e qual é a pasta. Se você criou uma implantação nova
+(URL diferente), cole a URL em *Trocar o endereço do script* para usá-la neste
+aparelho até o site ser atualizado.
+
+O mesmo pode ser visto abrindo a URL `/exec` no navegador. A resposta mostra
 tudo o que importa, sem revelar a senha:
 
 ```json

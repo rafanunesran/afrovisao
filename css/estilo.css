@@ -397,3 +397,21 @@ code {
 }
 
 .secundario.largura { width: 100%; margin-top: 14px; }
+
+.divisor { border: 0; border-top: 1px solid var(--borda); margin: 18px 0 4px; }
+.subtitulo { font-size: 0.95rem; margin: 6px 0; color: var(--texto-fraco); }
+.diagnostico {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: #100e0c;
+  color: var(--texto-fraco);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.diagnostico .bom { color: var(--ok); }
+.diagnostico .ruim { color: var(--erro); }
+details summary { cursor: pointer; color: var(--texto-fraco); font-size: 0.85rem; margin-top: 14px; }

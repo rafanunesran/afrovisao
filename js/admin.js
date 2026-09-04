@@ -6,12 +6,15 @@
 
   const cfg = window.APP_CONFIG || {};
   const CHAVE_SENHA = 'afrovisao:adm';
+  const CHAVE_ENDERECO = 'afrovisao:endereco';
 
   const el = {};
   ['telaEntrada', 'telaPainel', 'campoSenhaAdm', 'campoLembrar', 'btnEntrar', 'statusEntrada',
    'cartaoEstado', 'simboloEstado', 'tituloEstado', 'detalheEstado',
    'btnBloquear', 'statusComando', 'campoRecado', 'btnSalvarRecado',
-   'numTotal', 'numUltima', 'linkPasta', 'btnAtualizar', 'btnZerar', 'btnSair', 'btnAtualizarPainel'
+   'numTotal', 'numUltima', 'linkPasta', 'btnAtualizar', 'btnZerar', 'btnSair', 'btnAtualizarPainel',
+   'diagnostico', 'campoEndpointAdm', 'btnUsarEndereco', 'btnEnderecoPadrao', 'btnAtualizarEntrada',
+   'detalhesEndereco'
   ].forEach(function (id) { el[id] = document.getElementById(id); });
 
   let senhaAdm = '';
@@ -19,8 +22,14 @@
 
   /* ------------------------------------------------------------- conversa */
 
+  function enderecoDoScript() {
+    let proprio = '';
+    try { proprio = localStorage.getItem(CHAVE_ENDERECO) || ''; } catch (e) { proprio = ''; }
+    return (proprio || cfg.ENDPOINT || '').trim();
+  }
+
   function conversar(corpo) {
-    const endereco = (cfg.ENDPOINT || '').trim();
+    const endereco = enderecoDoScript();
     if (!endereco) return Promise.reject(new Error('Falta o ENDPOINT em js/config.js.'));
     // "text/plain" evita a requisição de verificação (preflight), que o Apps Script não responde.
     return fetch(endereco, {
@@ -113,6 +122,50 @@
     elemento.textContent = texto;
   }
 
+  /* --------------------------------------------------------- diagnóstico */
+
+  /* Mostra, sem revelar a senha, com qual script esta página está falando e o
+     que ele responde. É o que separa "senha errada" de "publicação antiga". */
+  function diagnosticar() {
+    const endereco = enderecoDoScript();
+    const fim = endereco ? endereco.slice(-24) : '(nenhum)';
+    const proprio = endereco !== (cfg.ENDPOINT || '').trim();
+
+    el.diagnostico.textContent = 'Script: …' + fim + (proprio ? '  (deste aparelho)' : '') +
+      '\nConsultando…';
+    el.campoEndpointAdm.value = proprio ? endereco : '';
+    // Com um endereço próprio em uso, a seção fica aberta: é preciso poder vê-lo e desfazê-lo.
+    el.detalhesEndereco.open = proprio;
+
+    if (!endereco) { el.diagnostico.textContent = 'Nenhum endereço de script configurado.'; return; }
+
+    fetch(endereco, { method: 'GET', mode: 'cors', redirect: 'follow' })
+      .then(function (r) { return r.text(); })
+      .then(function (texto) {
+        let d;
+        try { d = JSON.parse(texto); } catch (e) {
+          throw new Error('não respondeu em JSON (implantação não está como "Qualquer pessoa"?)');
+        }
+        const linhas = ['Script: …' + fim + (proprio ? '  (deste aparelho)' : '')];
+        if (d.senhaDefinida === undefined) {
+          linhas.push('Código publicado: ANTIGO ✗');
+          linhas.push('→ No editor: salve o arquivo (ícone de disquete) e publique');
+          linhas.push('  uma NOVA VERSÃO. Se criou uma implantação nova, cole a');
+          linhas.push('  URL dela em "Trocar o endereço do script".');
+        } else {
+          linhas.push('Código publicado: atualizado ✓');
+          linhas.push('Senha definida no script: ' + (d.senhaDefinida ? 'sim ✓' : 'NÃO ✗'));
+          linhas.push('Pasta do Drive: ' + (d.pasta || '?'));
+          linhas.push('Atividade agora: ' + (d.aberto ? 'liberada' : 'bloqueada'));
+        }
+        el.diagnostico.textContent = linhas.join('\n');
+      })
+      .catch(function (erro) {
+        el.diagnostico.textContent = 'Script: …' + fim +
+          '\nNão respondeu: ' + (erro.message || 'sem conexão');
+      });
+  }
+
   /* -------------------------------------------------------------- ações */
 
   function entrar() {
@@ -170,6 +223,26 @@
   /* ------------------------------------------------------------ eventos */
 
   el.btnEntrar.addEventListener('click', entrar);
+
+  el.btnUsarEndereco.addEventListener('click', function () {
+    const novo = el.campoEndpointAdm.value.trim();
+    try {
+      if (novo) localStorage.setItem(CHAVE_ENDERECO, novo);
+      else localStorage.removeItem(CHAVE_ENDERECO);
+    } catch (e) { /* modo privado */ }
+    diagnosticar();
+  });
+
+  el.btnEnderecoPadrao.addEventListener('click', function () {
+    try { localStorage.removeItem(CHAVE_ENDERECO); } catch (e) { /* modo privado */ }
+    el.campoEndpointAdm.value = '';
+    diagnosticar();
+  });
+
+  el.btnAtualizarEntrada.addEventListener('click', function () {
+    avisar(el.statusEntrada, 'Atualizando…');
+    window.limparCacheERecarregar();
+  });
   el.campoSenhaAdm.addEventListener('keydown', function (evento) {
     if (evento.key === 'Enter') entrar();
   });
@@ -210,6 +283,8 @@
   });
 
   /* ------------------------------------------------------------- início */
+
+  diagnosticar();
 
   let lembrada = '';
   try { lembrada = localStorage.getItem(CHAVE_SENHA) || ''; } catch (e) { lembrada = ''; }
