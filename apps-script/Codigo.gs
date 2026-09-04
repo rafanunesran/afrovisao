@@ -17,13 +17,10 @@ const CONFIG = {
   // ID da pasta do Drive: abra a pasta e copie o trecho depois de /folders/ na barra de endereço.
   ID_DA_PASTA: '1LvB1hg2AzyjWqijzZ_u06I4QofnKXsu9',   // pasta "Afrovisao"
 
-  // Senha SÓ SUA, usada apenas na página de administração. Não fica no site dos alunos.
-  //
-  // MELHOR AINDA: em vez de escrever a senha aqui, cadastre-a em
-  // Configurações do projeto → Propriedades do script → propriedade "senhaAdm".
-  // Guardada ali, ela vale na hora (sem publicar nova versão) e sobrevive a
-  // qualquer colagem futura deste arquivo. A propriedade tem prioridade.
-  SENHA_ADM: 'TROQUE-ESTA-SENHA-DE-ADMINISTRADOR',
+  // Senha da página de administração. Vale o que estiver escrito aqui.
+  // (Se deixar o texto do modelo, o script procura a senha na propriedade
+  //  "senhaAdm", em Configurações do projeto → Propriedades do script.)
+  SENHA_ADM: 'P3ralt@',
 
   // Como a atividade começa, caso nunca tenha sido ligada: false = bloqueada.
   LIBERADO_DE_INICIO: false,
@@ -58,14 +55,15 @@ function anotacoes() {
   return PropertiesService.getScriptProperties();
 }
 
-/** A senha das propriedades do script vence a escrita no código. */
+/** A senha escrita no código manda; a propriedade é só a reserva.
+ *  Assim uma propriedade esquecida ou digitada errada não passa por cima
+ *  do valor que está à vista neste arquivo. */
 function senhaAdministrador() {
-  const guardada = anotacoes().getProperty(CHAVES.SENHA_ADM);
-  if (guardada) return String(guardada);
   if (CONFIG.SENHA_ADM && CONFIG.SENHA_ADM !== 'TROQUE-ESTA-SENHA-DE-ADMINISTRADOR') {
     return String(CONFIG.SENHA_ADM);
   }
-  return '';
+  const guardada = anotacoes().getProperty(CHAVES.SENHA_ADM);
+  return guardada ? String(guardada) : '';
 }
 
 function lerAbertoAte() {
@@ -127,8 +125,19 @@ function doGet() {
   return responder({
     ok: true,
     mensagem: 'Recebedor do AfroVisão está funcionando.',
-    aberto: estado.aberto
+    aberto: estado.aberto,
+    senhaDefinida: !!senhaAdministrador(),   // confere sem revelar a senha
+    pasta: nomeDaPasta()
   });
+}
+
+/** Nome da pasta de destino, ou o motivo de não dar para abri-la. */
+function nomeDaPasta() {
+  try {
+    return DriveApp.getFolderById(CONFIG.ID_DA_PASTA).getName();
+  } catch (erro) {
+    return 'ERRO: ' + String(erro && erro.message ? erro.message : erro);
+  }
 }
 
 function responder(objeto) {

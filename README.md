@@ -47,18 +47,16 @@ as fotos caem na **sua** pasta, e nenhuma senha da sua conta fica dentro do site
 3. **Preencha a configuração** no topo do script:
    - `ID_DA_PASTA`: o ID copiado no passo 1 (neste repositório já vem preenchido
      com a pasta "Afrovisao").
-   - `SENHA_ADM`: **invente uma senha só sua.** Ela abre a página de administração
-     e não fica no site dos alunos. Sem defini-la, a administração não funciona.
+   - `SENHA_ADM`: a senha que abre a página de administração. Neste repositório
+     ela já vem preenchida. Vale o que estiver escrito nessa linha.
    - `LIBERADO_DE_INICIO`: deixe `false` — a atividade começa bloqueada.
    - `CRIAR_SUBPASTA_POR_TURMA`: deixe `true` para separar as fotos por turma.
    - `ID_DA_PLANILHA` (opcional): ID de uma planilha para registrar cada envio.
 
-3b. **Onde guardar a senha (recomendado).** Em vez de escrever a senha no código,
-   cadastre-a em *Configurações do projeto (⚙ na barra lateral) → Propriedades do
-   script → Adicionar propriedade*: nome `senhaAdm`, valor a sua senha. Vantagens:
-   ela passa a valer **na hora**, sem publicar nova versão, e **não se perde** se
-   você colar este arquivo de novo no futuro. A propriedade tem prioridade sobre
-   o `SENHA_ADM` escrito no código.
+   Alternativa: se você apagar o valor e deixar o texto do modelo, o script
+   procura a senha na propriedade `senhaAdm` (*Configurações do projeto →
+   Propriedades do script*), que sobrevive a colagens futuras deste arquivo.
+   O valor escrito no código sempre tem prioridade.
 
 4. **Teste a configuração.** No editor, escolha a função `conferirConfiguracao`
    e clique em *Executar*. O Google vai pedir autorização — aceite (na tela
@@ -73,7 +71,18 @@ as fotos caem na **sua** pasta, e nenhuma senha da sua conta fica dentro do site
 
 > Sempre que alterar o script, use *Implantar → Gerenciar implantações → editar (✏️)
 > → Versão: **Nova versão***. Assim a URL continua a mesma. Sem isso, a URL
-> continua servindo o código antigo.
+> continua servindo o código antigo — é o tropeço mais comum deste projeto.
+
+**Como conferir se deu certo:** abra a URL `/exec` no navegador. A resposta mostra
+tudo o que importa, sem revelar a senha:
+
+```json
+{"ok":true, "aberto":false, "senhaDefinida":true, "pasta":"Afrovisao", "versao":2}
+```
+
+- `senhaDefinida: false` → a senha não chegou ao ar (falta publicar nova versão).
+- `pasta` começando com `ERRO:` → o `ID_DA_PASTA` está errado.
+- sem o campo `versao` → a implantação ainda serve um código antigo.
 
 ---
 
@@ -186,8 +195,14 @@ Para ver o que o script recebeu: no editor do Apps Script, menu lateral →
   atividade começa bloqueada, prefira liberar com prazo (50 min / 1h40) e
   bloqueie ao fim da aula. Terminado o projeto, você pode desativar a implantação
   do Apps Script.
-- A `SENHA_ADM` fica **apenas** dentro do Apps Script e no seu celular. Nunca a
-  escreva em `js/config.js` nem em nenhum arquivo deste repositório.
+- A `SENHA_ADM` está escrita em `apps-script/Codigo.gs`, a pedido do professor,
+  para simplificar a manutenção. Como o repositório é público, quem o encontrar
+  pode abrir e fechar a atividade. Isso não dá acesso ao seu Drive nem às fotos
+  já enviadas — o pior caso é alguém liberar a atividade fora de hora. Para
+  fechar essa brecha depois, basta trocar o valor de `SENHA_ADM` por outro que
+  não esteja no repositório (ou deixar a linha do modelo e usar a propriedade
+  `senhaAdm`) e publicar uma nova versão.
+- A senha **não** fica em `js/config.js` nem em nenhum arquivo servido aos alunos.
 
 ## Estrutura dos arquivos
 
