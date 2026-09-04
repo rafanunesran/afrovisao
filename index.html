@@ -83,9 +83,7 @@
 <dialog id="dialogoConfig">
   <form method="dialog" class="cartao">
     <h2>Configurações</h2>
-    <label for="campoEndpoint">Endereço do aplicativo do Google (Apps Script)</label>
-    <input id="campoEndpoint" type="url" placeholder="https://script.google.com/macros/s/.../exec" inputmode="url">
-    <p class="ajuda">Cole aqui a URL gerada ao publicar o script. Veja o passo a passo no README.</p>
+    <p id="estadoServidor" class="ajuda">Servidor: verificando…</p>
     <label for="campoQualidade">Qualidade da imagem</label>
     <select id="campoQualidade">
       <option value="1200">Leve (1200 px)</option>
@@ -97,6 +95,8 @@
       <button id="btnSalvarConfig" class="primario" type="button">Salvar</button>
     </div>
     <p id="statusConfig" class="status" role="status" aria-live="polite"></p>
+    <button id="btnAtualizarApp" class="secundario largura" type="button">Atualizar o aplicativo</button>
+    <p class="ajuda">Use se este aparelho estiver com uma versão antiga do site.</p>
     <p class="ajuda linhaAdmin"><a href="admin.html">Página de administração</a></p>
     <button id="btnTrocarAluno" class="linkPerigo" type="button">Trocar de aluno</button>
     <button class="fechar" value="fechar" aria-label="Fechar">&times;</button>
@@ -104,6 +104,7 @@
 </dialog>
 
 <script src="js/config.js"></script>
+<script src="js/atualizar.js"></script>
 <script src="js/banco.js"></script>
 <script src="js/app.js"></script>
 </body>

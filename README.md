@@ -125,6 +125,11 @@ Se você bloquear no meio da aula, o app dos alunos cai na tela de cadeado em at
 um minuto e a câmera se fecha. As fotos que ainda não subiram **continuam
 guardadas no aparelho** e podem ser enviadas quando você liberar de novo.
 
+O endereço do script fica apenas em `js/config.js` — o aluno não vê nem digita
+nada disso. Se um celular ficar com uma versão antiga do site (tela travada,
+erro estranho), use a engrenagem ⚙ → **Atualizar o aplicativo**: isso apaga a
+cópia guardada no aparelho e recarrega. O mesmo botão existe no painel.
+
 Dica: no Android (Chrome) use *menu → Adicionar à tela inicial*; no iPhone (Safari),
 *compartilhar → Adicionar à Tela de Início*. O app abre em tela cheia, sem barra
 de endereço.
@@ -155,6 +160,8 @@ Para testar no celular na mesma rede sem https, use o botão de reserva
 | "Resposta inesperada do Google" | A implantação não está como *Qualquer pessoa* | Refaça o passo 5 da Parte 1 |
 | "Invalid file or folder ID" | O `ID_DA_PASTA` não foi preenchido | Passo 3 da Parte 1, depois publique nova versão |
 | "Não foi possível falar com o servidor" | Sem internet, ou `ENDPOINT` errado | Confira o Wi-Fi e a URL em `js/config.js` |
+| "O script publicado está numa versão antiga" | O código foi editado mas a implantação não | *Implantar → Gerenciar implantações → ✏️ → Nova versão* |
+| "Este aparelho está com uma versão antiga do site" | O celular guardou uma cópia velha | Engrenagem ⚙ → **Atualizar o aplicativo** |
 | Envio falha só com fotos grandes | Cota do Apps Script | Escolha qualidade "Leve (1200 px)" na engrenagem |
 
 Para ver o que o script recebeu: no editor do Apps Script, menu lateral →
@@ -182,6 +189,7 @@ index.html               aplicativo dos alunos
 admin.html               painel para liberar e bloquear a atividade
 css/estilo.css           aparência (feita para celular)
 js/config.js             ← endereço do Apps Script (sem senha)
+js/atualizar.js          botão que apaga a cópia guardada no aparelho
 js/banco.js              fila de fotos no aparelho (IndexedDB)
 js/app.js                câmera, captura, fila, envio e consulta do estado
 js/admin.js              painel de administração

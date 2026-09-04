@@ -11,7 +11,7 @@
   ['telaEntrada', 'telaPainel', 'campoSenhaAdm', 'campoLembrar', 'btnEntrar', 'statusEntrada',
    'cartaoEstado', 'simboloEstado', 'tituloEstado', 'detalheEstado',
    'btnBloquear', 'statusComando', 'campoRecado', 'btnSalvarRecado',
-   'numTotal', 'numUltima', 'linkPasta', 'btnAtualizar', 'btnZerar', 'btnSair'
+   'numTotal', 'numUltima', 'linkPasta', 'btnAtualizar', 'btnZerar', 'btnSair', 'btnAtualizarPainel'
   ].forEach(function (id) { el[id] = document.getElementById(id); });
 
   let senhaAdm = '';
@@ -199,6 +199,11 @@
   });
 
   el.btnSair.addEventListener('click', sair);
+
+  el.btnAtualizarPainel.addEventListener('click', function () {
+    avisar(el.statusComando, 'Atualizando…');
+    window.limparCacheERecarregar();
+  });
 
   document.addEventListener('visibilitychange', function () {
     if (!document.hidden && el.telaPainel.classList.contains('ativa')) atualizar();

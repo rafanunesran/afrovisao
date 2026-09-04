@@ -395,3 +395,5 @@ code {
   padding: 1px 5px;
   font-size: 0.85em;
 }
+
+.secundario.largura { width: 100%; margin-top: 14px; }

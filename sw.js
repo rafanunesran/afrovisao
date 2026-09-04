@@ -1,14 +1,14 @@
 /* Service worker: guarda a "casca" do aplicativo para ele abrir mesmo sem internet.
    As fotos ficam no IndexedDB e só são enviadas quando a conexão volta. */
-const VERSAO = 'afrovisao-v2';
+const VERSAO = 'afrovisao-v3';
 const ARQUIVOS = [
   './',
   './index.html',
   './admin.html',
   './css/estilo.css',
-  './js/config.js',
   './js/banco.js',
   './js/app.js',
+  './js/atualizar.js',
   './js/admin.js',
   './manifest.webmanifest',
   './icons/icone-192.png',
@@ -37,8 +37,11 @@ self.addEventListener('activate', function (evento) {
 
 self.addEventListener('fetch', function (evento) {
   const pedido = evento.request;
-  // Envios ao Google nunca passam pelo cache.
-  if (pedido.method !== 'GET' || pedido.url.indexOf('script.google') !== -1) return;
+  // Envios ao Google e o arquivo de configuração nunca passam pelo cache:
+  // um endereço desatualizado deixaria o aparelho sem conseguir enviar.
+  if (pedido.method !== 'GET' ||
+      pedido.url.indexOf('script.google') !== -1 ||
+      pedido.url.indexOf('/js/config.js') !== -1) return;
 
   // Rede primeiro (para as atualizações chegarem), cache como reserva.
   evento.respondWith(

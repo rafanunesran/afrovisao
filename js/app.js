@@ -12,7 +12,7 @@
    'video', 'canvas', 'avisoCamera', 'textoAvisoCamera', 'campoArquivo',
    'btnTrocarCamera', 'btnDisparar', 'btnGaleria', 'contadorFila', 'dicaCamera',
    'btnVoltarCamera', 'resumoFila', 'grade', 'btnEnviar', 'statusEnvio',
-   'dialogoConfig', 'campoEndpoint', 'campoQualidade',
+   'dialogoConfig', 'estadoServidor', 'campoQualidade', 'btnAtualizarApp',
    'btnTestarConexao', 'btnSalvarConfig', 'statusConfig', 'btnTrocarAluno'
   ].forEach(function (id) { el[id] = document.getElementById(id); });
 
@@ -37,7 +37,6 @@
     return {
       nome: salvo.nome || '',
       turma: salvo.turma || '',
-      endpoint: salvo.endpoint || cfg.ENDPOINT || '',
       larguraMaxima: salvo.larguraMaxima || cfg.LARGURA_MAXIMA || 1600
     };
   }
@@ -320,9 +319,10 @@
   }
 
   function conversar(corpo) {
-    const endereco = (estado.prefs.endpoint || '').trim();
+    const endereco = (cfg.ENDPOINT || '').trim();
     if (!endereco) {
-      return Promise.reject(new Error('Endereço do Apps Script não configurado (toque na engrenagem).'));
+      return Promise.reject(new Error('Este aparelho está com uma versão antiga do site. ' +
+        'Abra a engrenagem e toque em "Atualizar o aplicativo".'));
     }
     // "text/plain" evita a requisição de verificação (preflight), que o Apps Script não responde.
     return fetch(endereco, {
@@ -423,7 +423,9 @@
   /* --------------------------------------------------------- configurações */
 
   function abrirConfig() {
-    el.campoEndpoint.value = estado.prefs.endpoint;
+    el.estadoServidor.textContent = (cfg.ENDPOINT || '').trim()
+      ? 'Servidor: configurado.'
+      : 'Servidor: NÃO configurado — toque em "Atualizar o aplicativo".';
     el.campoQualidade.value = String(estado.prefs.larguraMaxima);
     el.statusConfig.textContent = '';
     el.statusConfig.className = 'status';
@@ -435,7 +437,6 @@
   }
 
   function salvarConfig() {
-    estado.prefs.endpoint = el.campoEndpoint.value.trim();
     estado.prefs.larguraMaxima = Number(el.campoQualidade.value) || 1600;
     gravarPrefs();
     el.statusConfig.className = 'status ok';
@@ -443,7 +444,6 @@
   }
 
   function testarConexao() {
-    estado.prefs.endpoint = el.campoEndpoint.value.trim();
     el.statusConfig.className = 'status';
     el.statusConfig.textContent = 'Testando…';
     conversar({ acao: 'estado' })
@@ -569,6 +569,11 @@
     el.dialogoConfig.close();
   });
   el.btnTestarConexao.addEventListener('click', testarConexao);
+  el.btnAtualizarApp.addEventListener('click', function () {
+    el.statusConfig.className = 'status';
+    el.statusConfig.textContent = 'Atualizando…';
+    window.limparCacheERecarregar();
+  });
   el.btnTrocarAluno.addEventListener('click', function () {
     estado.prefs.nome = '';
     estado.prefs.turma = '';
