@@ -18,6 +18,11 @@ const CONFIG = {
   ID_DA_PASTA: '1LvB1hg2AzyjWqijzZ_u06I4QofnKXsu9',   // pasta "Afrovisao"
 
   // Senha SÓ SUA, usada apenas na página de administração. Não fica no site dos alunos.
+  //
+  // MELHOR AINDA: em vez de escrever a senha aqui, cadastre-a em
+  // Configurações do projeto → Propriedades do script → propriedade "senhaAdm".
+  // Guardada ali, ela vale na hora (sem publicar nova versão) e sobrevive a
+  // qualquer colagem futura deste arquivo. A propriedade tem prioridade.
   SENHA_ADM: 'TROQUE-ESTA-SENHA-DE-ADMINISTRADOR',
 
   // Como a atividade começa, caso nunca tenha sido ligada: false = bloqueada.
@@ -39,6 +44,7 @@ const VERSAO_SCRIPT = 2;
 
 // Nomes das anotações guardadas pelo script entre uma execução e outra.
 const CHAVES = {
+  SENHA_ADM: 'senhaAdm',     // cadastrada à mão nas propriedades do script
   ABERTO_ATE: 'abertoAte',   // 0 = bloqueado, -1 = aberto sem prazo, ou um horário limite
   RECADO: 'recado',
   TOTAL: 'total',
@@ -50,6 +56,16 @@ const CHAVES = {
 
 function anotacoes() {
   return PropertiesService.getScriptProperties();
+}
+
+/** A senha das propriedades do script vence a escrita no código. */
+function senhaAdministrador() {
+  const guardada = anotacoes().getProperty(CHAVES.SENHA_ADM);
+  if (guardada) return String(guardada);
+  if (CONFIG.SENHA_ADM && CONFIG.SENHA_ADM !== 'TROQUE-ESTA-SENHA-DE-ADMINISTRADOR') {
+    return String(CONFIG.SENHA_ADM);
+  }
+  return '';
 }
 
 function lerAbertoAte() {
@@ -125,10 +141,12 @@ function responder(objeto) {
 /* --------------------------------------------------------- administração */
 
 function comandoDeAdmin(dados) {
-  if (CONFIG.SENHA_ADM === 'TROQUE-ESTA-SENHA-DE-ADMINISTRADOR') {
-    return { ok: false, erro: 'Defina a SENHA_ADM no script antes de usar a administração.' };
+  const senha = senhaAdministrador();
+  if (!senha) {
+    return { ok: false, erro: 'Falta definir a senha de administrador. No editor do Apps Script: ' +
+      'Configurações do projeto → Propriedades do script → adicionar "senhaAdm".' };
   }
-  if (String(CONFIG.SENHA_ADM) !== String(dados.senhaAdm || '')) {
+  if (senha !== String(dados.senhaAdm || '')) {
     return { ok: false, erro: 'Senha de administrador incorreta.' };
   }
 
@@ -236,7 +254,8 @@ function registrarNaPlanilha(dados, arquivo, pasta) {
 function conferirConfiguracao() {
   const pasta = DriveApp.getFolderById(CONFIG.ID_DA_PASTA);
   Logger.log('Pasta encontrada: %s', pasta.getName());
-  Logger.log('Senha de administrador: %s',
-    CONFIG.SENHA_ADM === 'TROQUE-ESTA-SENHA-DE-ADMINISTRADOR' ? 'ATENÇÃO, ainda é a do modelo!' : 'definida');
+  const daPropriedade = !!anotacoes().getProperty(CHAVES.SENHA_ADM);
+  Logger.log('Senha de administrador: %s', !senhaAdministrador() ? 'ATENÇÃO, não foi definida!'
+    : (daPropriedade ? 'definida nas propriedades do script' : 'definida no código'));
   Logger.log('Atividade agora: %s', estaAberto() ? 'ABERTA' : 'BLOQUEADA');
 }

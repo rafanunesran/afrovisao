@@ -48,10 +48,17 @@ as fotos caem na **sua** pasta, e nenhuma senha da sua conta fica dentro do site
    - `ID_DA_PASTA`: o ID copiado no passo 1 (neste repositório já vem preenchido
      com a pasta "Afrovisao").
    - `SENHA_ADM`: **invente uma senha só sua.** Ela abre a página de administração
-     e não fica no site dos alunos. Sem trocá-la, a administração não funciona.
+     e não fica no site dos alunos. Sem defini-la, a administração não funciona.
    - `LIBERADO_DE_INICIO`: deixe `false` — a atividade começa bloqueada.
    - `CRIAR_SUBPASTA_POR_TURMA`: deixe `true` para separar as fotos por turma.
    - `ID_DA_PLANILHA` (opcional): ID de uma planilha para registrar cada envio.
+
+3b. **Onde guardar a senha (recomendado).** Em vez de escrever a senha no código,
+   cadastre-a em *Configurações do projeto (⚙ na barra lateral) → Propriedades do
+   script → Adicionar propriedade*: nome `senhaAdm`, valor a sua senha. Vantagens:
+   ela passa a valer **na hora**, sem publicar nova versão, e **não se perde** se
+   você colar este arquivo de novo no futuro. A propriedade tem prioridade sobre
+   o `SENHA_ADM` escrito no código.
 
 4. **Teste a configuração.** No editor, escolha a função `conferirConfiguracao`
    e clique em *Executar*. O Google vai pedir autorização — aceite (na tela
@@ -154,7 +161,7 @@ Para testar no celular na mesma rede sem https, use o botão de reserva
 |---|---|---|
 | "Atividade bloqueada" | A atividade não foi liberada, ou o prazo venceu | Abra `admin.html` e libere |
 | "Senha de administrador incorreta" | Senha diferente da `SENHA_ADM` do script | Confira o valor no editor do Apps Script |
-| "Defina a SENHA_ADM no script" | A senha ainda é a do modelo | Troque `SENHA_ADM` e publique uma **nova versão** |
+| "Falta definir a senha de administrador" | Nenhuma senha cadastrada | *Configurações do projeto → Propriedades do script → `senhaAdm`* (passo 3b) |
 | "A permissão da câmera foi negada" | O navegador bloqueou o acesso | Cadeado ao lado do endereço → permitir Câmera → recarregar |
 | "A câmera só funciona em endereços seguros" | O site foi aberto por `http://` | Use o link `https://` do GitHub Pages |
 | "Resposta inesperada do Google" | A implantação não está como *Qualquer pessoa* | Refaça o passo 5 da Parte 1 |
