@@ -33,6 +33,10 @@ const CONFIG = {
   ID_DA_PLANILHA: ''
 };
 
+// Sobe de número quando o formato das respostas muda. O site avisa se a versão
+// publicada estiver velha, em vez de mostrar um erro sem sentido.
+const VERSAO_SCRIPT = 2;
+
 // Nomes das anotações guardadas pelo script entre uma execução e outra.
 const CHAVES = {
   ABERTO_ATE: 'abertoAte',   // 0 = bloqueado, -1 = aberto sem prazo, ou um horário limite
@@ -112,6 +116,7 @@ function doGet() {
 }
 
 function responder(objeto) {
+  objeto.versao = VERSAO_SCRIPT;
   return ContentService
     .createTextOutput(JSON.stringify(objeto))
     .setMimeType(ContentService.MimeType.JSON);

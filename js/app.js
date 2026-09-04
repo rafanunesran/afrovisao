@@ -342,6 +342,10 @@
         } catch (e) {
           throw new Error('Resposta inesperada do Google. Confirme se a implantação está como "Qualquer pessoa".');
         }
+        if (!(Number(dados.versao) >= 2)) {
+          throw new Error('O script publicado no Google está numa versão antiga. ' +
+            'No editor do Apps Script: Implantar → Gerenciar implantações → ✏️ → Versão: Nova versão.');
+        }
         if (!resposta.ok || !dados.ok) {
           const falha = new Error(dados.erro || ('Erro ' + resposta.status));
           falha.bloqueado = dados.bloqueado === true;

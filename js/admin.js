@@ -39,6 +39,10 @@
         } catch (e) {
           throw new Error('Resposta inesperada do Google. Confirme se a implantação está como "Qualquer pessoa".');
         }
+        if (!(Number(dados.versao) >= 2)) {
+          throw new Error('O script publicado no Google está numa versão antiga. ' +
+            'No editor do Apps Script: Implantar → Gerenciar implantações → ✏️ → Versão: Nova versão.');
+        }
         if (!dados.ok) throw new Error(dados.erro || 'Erro desconhecido.');
         return dados;
       });
@@ -131,6 +135,10 @@
       .catch(function (erro) {
         el.btnEntrar.disabled = false;
         senhaAdm = '';
+        if (/incorreta/i.test(erro.message)) {
+          // Senha lembrada que não serve mais: apaga, senão erra a cada abertura.
+          try { localStorage.removeItem(CHAVE_SENHA); } catch (e) { /* modo privado */ }
+        }
         avisar(el.statusEntrada, erro.message, 'ruim');
       });
   }
