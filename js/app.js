@@ -6,12 +6,13 @@
   const CHAVE_PREFS = 'afrovisao:prefs';
 
   const el = {};
-  ['tituloApp', 'btnConfig', 'telaIdentificacao', 'telaCamera', 'telaGaleria',
+  ['tituloApp', 'btnConfig', 'telaBloqueada', 'telaIdentificacao', 'telaCamera', 'telaGaleria',
+   'recadoBloqueio', 'btnVerificarDeNovo', 'statusBloqueio',
    'campoNome', 'campoTurma', 'btnComecar', 'avisoIdentificacao',
    'video', 'canvas', 'avisoCamera', 'textoAvisoCamera', 'campoArquivo',
    'btnTrocarCamera', 'btnDisparar', 'btnGaleria', 'contadorFila', 'dicaCamera',
    'btnVoltarCamera', 'resumoFila', 'grade', 'btnEnviar', 'statusEnvio',
-   'dialogoConfig', 'campoEndpoint', 'campoSenha', 'campoQualidade',
+   'dialogoConfig', 'campoEndpoint', 'campoQualidade',
    'btnTestarConexao', 'btnSalvarConfig', 'statusConfig', 'btnTrocarAluno'
   ].forEach(function (id) { el[id] = document.getElementById(id); });
 
@@ -23,7 +24,9 @@
     urls: new Map(),      // id -> objectURL do miniatura
     enviando: false,
     abrindo: false,
-    ultimoCarimbo: 0
+    ultimoCarimbo: 0,
+    aberto: null,        // null = ainda não sabemos se a atividade está liberada
+    verificando: false
   };
 
   /* ------------------------------------------------------------------ prefs */
@@ -35,7 +38,6 @@
       nome: salvo.nome || '',
       turma: salvo.turma || '',
       endpoint: salvo.endpoint || cfg.ENDPOINT || '',
-      senha: salvo.senha || cfg.SENHA || '',
       larguraMaxima: salvo.larguraMaxima || cfg.LARGURA_MAXIMA || 1600
     };
   }
@@ -47,9 +49,10 @@
   /* ------------------------------------------------------------- navegação */
 
   function mostrarTela(nome) {
-    [el.telaIdentificacao, el.telaCamera, el.telaGaleria].forEach(function (t) {
+    [el.telaBloqueada, el.telaIdentificacao, el.telaCamera, el.telaGaleria].forEach(function (t) {
       t.classList.remove('ativa');
     });
+    if (nome === 'bloqueada') el.telaBloqueada.classList.add('ativa');
     if (nome === 'identificacao') el.telaIdentificacao.classList.add('ativa');
     if (nome === 'camera') el.telaCamera.classList.add('ativa');
     if (nome === 'galeria') el.telaGaleria.classList.add('ativa');
@@ -340,7 +343,10 @@
           throw new Error('Resposta inesperada do Google. Confirme se a implantação está como "Qualquer pessoa".');
         }
         if (!resposta.ok || !dados.ok) {
-          throw new Error(dados.erro || ('Erro ' + resposta.status));
+          const falha = new Error(dados.erro || ('Erro ' + resposta.status));
+          falha.bloqueado = dados.bloqueado === true;
+          falha.recado = dados.recado || '';
+          throw falha;
         }
         return dados;
       });
@@ -353,7 +359,6 @@
     return blobParaBase64(foto.blob)
       .then(function (base64) {
         return conversar({
-          senha: estado.prefs.senha,
           nome: estado.prefs.nome,
           turma: estado.prefs.turma,
           nomeArquivo: nomeDoArquivo(foto),
@@ -394,6 +399,12 @@
       });
     }, Promise.resolve()).then(function () {
       estado.enviando = false;
+      if (ultimoErro && ultimoErro.bloqueado) {
+        // A atividade foi fechada no meio do envio: as fotos ficam guardadas na fila.
+        desenharGaleria();
+        aplicarEstado({ aberto: false, recado: ultimoErro.recado });
+        return;
+      }
       if (ultimoErro) {
         el.statusEnvio.className = 'status ruim';
         el.statusEnvio.textContent = enviadas + ' enviada(s). Algumas falharam: ' + ultimoErro.message;
@@ -409,7 +420,6 @@
 
   function abrirConfig() {
     el.campoEndpoint.value = estado.prefs.endpoint;
-    el.campoSenha.value = estado.prefs.senha;
     el.campoQualidade.value = String(estado.prefs.larguraMaxima);
     el.statusConfig.textContent = '';
     el.statusConfig.className = 'status';
@@ -422,7 +432,6 @@
 
   function salvarConfig() {
     estado.prefs.endpoint = el.campoEndpoint.value.trim();
-    estado.prefs.senha = el.campoSenha.value.trim();
     estado.prefs.larguraMaxima = Number(el.campoQualidade.value) || 1600;
     gravarPrefs();
     el.statusConfig.className = 'status ok';
@@ -431,18 +440,86 @@
 
   function testarConexao() {
     estado.prefs.endpoint = el.campoEndpoint.value.trim();
-    estado.prefs.senha = el.campoSenha.value.trim();
     el.statusConfig.className = 'status';
     el.statusConfig.textContent = 'Testando…';
-    conversar({ acao: 'teste', senha: estado.prefs.senha })
+    conversar({ acao: 'estado' })
       .then(function (dados) {
         el.statusConfig.className = 'status ok';
-        el.statusConfig.textContent = 'Conectado à pasta "' + (dados.pasta || 'do Drive') + '".';
+        el.statusConfig.textContent = 'Conectado. A atividade está ' +
+          (dados.aberto ? 'liberada.' : 'bloqueada no momento.');
       })
       .catch(function (erro) {
         el.statusConfig.className = 'status ruim';
         el.statusConfig.textContent = erro.message;
       });
+  }
+
+  /* -------------------------------------------- interruptor da atividade */
+
+  /* Pergunta ao script se a atividade está liberada.
+     Sem resposta clara, o app não abre a câmera: é a professora ou professor
+     quem libera, e na dúvida o certo é ficar fechado. */
+  function consultarEstado() {
+    if (estado.verificando) return Promise.resolve(null);
+    estado.verificando = true;
+    return conversar({ acao: 'estado' })
+      .then(function (dados) {
+        estado.verificando = false;
+        return dados;
+      })
+      .catch(function (erro) {
+        estado.verificando = false;
+        throw erro;
+      });
+  }
+
+  function aplicarEstado(dados) {
+    estado.aberto = dados.aberto === true;
+    if (estado.aberto) return true;
+    el.recadoBloqueio.textContent = dados.recado ||
+      'A câmera será liberada pela professora ou professor.';
+    el.statusBloqueio.textContent = '';
+    el.statusBloqueio.className = 'status';
+    mostrarTela('bloqueada');
+    return false;
+  }
+
+  /* Entrada no app: só passa da tela de cadeado com um "liberado" do script. */
+  function entrarNoApp() {
+    el.statusBloqueio.className = 'status';
+    el.statusBloqueio.textContent = 'Verificando…';
+    el.btnVerificarDeNovo.disabled = true;
+    return consultarEstado()
+      .then(function (dados) {
+        el.btnVerificarDeNovo.disabled = false;
+        if (!dados || !aplicarEstado(dados)) return;
+        mostrarTela(estado.prefs.nome && estado.prefs.turma ? 'camera' : 'identificacao');
+      })
+      .catch(function (erro) {
+        el.btnVerificarDeNovo.disabled = false;
+        estado.aberto = null;
+        el.recadoBloqueio.textContent = 'Não foi possível falar com o servidor da atividade.';
+        el.statusBloqueio.className = 'status ruim';
+        el.statusBloqueio.textContent = erro.message;
+        mostrarTela('bloqueada');
+      });
+  }
+
+  /* De tempos em tempos confere se a atividade foi fechada durante a aula.
+     Uma falha de rede aqui NÃO tranca o aluno: só um "bloqueado" vindo do
+     script fecha a câmera, para que um sinal ruim não atrapalhe o trabalho. */
+  function vigiarEstado() {
+    const naCamera = el.telaCamera.classList.contains('ativa');
+    const naGaleria = el.telaGaleria.classList.contains('ativa');
+    if (document.hidden || estado.enviando || (!naCamera && !naGaleria)) return;
+    consultarEstado()
+      .then(function (dados) {
+        if (dados && dados.aberto === false) {
+          pararCamera();
+          aplicarEstado(dados);
+        }
+      })
+      .catch(function () { /* sinal ruim: mantém a aula andando */ });
   }
 
   /* ---------------------------------------------------------------- eventos */
@@ -459,7 +536,10 @@
     estado.prefs.turma = turma;
     gravarPrefs();
     mostrarTela('camera');
+    vigiarEstado();
   });
+
+  el.btnVerificarDeNovo.addEventListener('click', entrarNoApp);
 
   el.btnDisparar.addEventListener('click', tirarFoto);
   el.btnTrocarCamera.addEventListener('click', trocarCamera);
@@ -515,8 +595,10 @@
     .catch(function () { estado.fotos = []; })
     .then(function () {
       atualizarContador();
-      mostrarTela(estado.prefs.nome && estado.prefs.turma ? 'camera' : 'identificacao');
+      entrarNoApp();
     });
+
+  setInterval(vigiarEstado, 60000);
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {

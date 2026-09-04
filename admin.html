@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12100e">
+<title>AfroVisão — Administração</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="icons/icone-192.png">
+<link rel="stylesheet" href="css/estilo.css">
+</head>
+<body class="paginaAdmin">
+
+<header class="topo">
+  <h1>Administração</h1>
+  <a class="icone" href="index.html" aria-label="Voltar ao aplicativo">&#8592;</a>
+</header>
+
+<main class="conteudoAdmin">
+
+  <!-- Entrada -->
+  <section id="telaEntrada" class="tela ativa">
+    <div class="cartao">
+      <h2>Senha de administrador</h2>
+      <p class="ajuda">É a <code>SENHA_ADM</code> definida dentro do Apps Script. Ela não fica guardada no site dos alunos.</p>
+      <label for="campoSenhaAdm">Senha</label>
+      <input id="campoSenhaAdm" type="password" autocomplete="current-password" placeholder="sua senha">
+      <label class="linhaLembrar">
+        <input id="campoLembrar" type="checkbox" checked>
+        <span>Lembrar neste aparelho</span>
+      </label>
+      <button id="btnEntrar" class="primario" type="button">Entrar</button>
+      <p id="statusEntrada" class="status" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <!-- Painel -->
+  <section id="telaPainel" class="tela">
+    <div id="cartaoEstado" class="cartao centralizado estadoDesconhecido">
+      <span id="simboloEstado" class="cadeado" aria-hidden="true">&#128274;</span>
+      <h2 id="tituloEstado">Verificando…</h2>
+      <p id="detalheEstado" class="ajuda"></p>
+    </div>
+
+    <div class="cartao">
+      <h2>Liberar a atividade</h2>
+      <p class="ajuda">Enquanto estiver bloqueada, o aplicativo dos alunos nem abre a câmera.</p>
+      <div class="grelhaBotoes">
+        <button class="secundario" type="button" data-minutos="50">50 minutos<br><small>uma aula</small></button>
+        <button class="secundario" type="button" data-minutos="100">1h40<br><small>duas aulas</small></button>
+        <button class="secundario" type="button" data-minutos="0">Sem prazo<br><small>até eu bloquear</small></button>
+      </div>
+      <button id="btnBloquear" class="perigo" type="button">Bloquear agora</button>
+      <p id="statusComando" class="status" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="cartao">
+      <h2>Recado na tela bloqueada</h2>
+      <p class="ajuda">Aparece para os alunos quando a atividade está fechada.</p>
+      <input id="campoRecado" type="text" maxlength="300" placeholder="Ex.: Voltamos às 14h, na quadra.">
+      <button id="btnSalvarRecado" class="secundario" type="button">Salvar recado</button>
+    </div>
+
+    <div class="cartao">
+      <h2>Acompanhamento</h2>
+      <dl class="numeros">
+        <div><dt>Fotos recebidas</dt><dd id="numTotal">—</dd></div>
+        <div><dt>Última foto</dt><dd id="numUltima">—</dd></div>
+      </dl>
+      <p class="ajuda"><a id="linkPasta" href="#" target="_blank" rel="noopener">Abrir a pasta no Drive</a></p>
+      <div class="linhaBotoes">
+        <button id="btnAtualizar" class="secundario" type="button">Atualizar</button>
+        <button id="btnZerar" class="secundario" type="button">Zerar contagem</button>
+      </div>
+      <button id="btnSair" class="linkPerigo" type="button">Sair da administração</button>
+    </div>
+  </section>
+
+</main>
+
+<script src="js/config.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

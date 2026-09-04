@@ -320,3 +320,78 @@ dialog .cartao { position: relative; margin: 0; }
   font-size: 1.6rem;
   line-height: 1;
 }
+
+/* ---------- tela de bloqueio (aplicativo dos alunos) ---------- */
+.cartao.centralizado {
+  align-items: center;
+  text-align: center;
+  margin: auto 16px;
+}
+.cartao.centralizado .primario { width: 100%; }
+
+.cadeado { font-size: 3rem; line-height: 1; }
+
+.linhaAdmin { margin-top: 16px; text-align: center; }
+.linhaAdmin a { color: var(--texto-fraco); }
+
+/* ---------- página de administração ---------- */
+.paginaAdmin .conteudoAdmin {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.paginaAdmin .tela { flex: 0 0 auto; }
+.paginaAdmin .topo a.icone { text-decoration: none; }
+.paginaAdmin .cartao { max-width: 560px; width: calc(100% - 32px); margin-inline: auto; }
+
+#cartaoEstado { border-width: 2px; }
+#cartaoEstado h2 { font-size: 1.4rem; margin: 6px 0 2px; }
+.estadoAberto { border-color: var(--ok); }
+.estadoAberto h2 { color: var(--ok); }
+.estadoFechado { border-color: var(--erro); }
+.estadoFechado h2 { color: var(--erro); }
+.estadoDesconhecido h2 { color: var(--texto-fraco); }
+
+.grelhaBotoes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+.grelhaBotoes button { padding: 12px 6px; line-height: 1.35; }
+.grelhaBotoes small { color: var(--texto-fraco); font-size: 0.75rem; }
+
+.perigo {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid var(--erro);
+  background: transparent;
+  color: var(--erro);
+  font-weight: 700;
+  width: 100%;
+}
+
+.linhaLembrar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--texto-fraco);
+  font-size: 0.9rem;
+}
+.linhaLembrar input { width: auto; }
+
+.numeros { display: flex; gap: 24px; margin: 10px 0 4px; }
+.numeros dt { color: var(--texto-fraco); font-size: 0.8rem; }
+.numeros dd { margin: 2px 0 0; font-size: 1.5rem; font-weight: 700; }
+
+code {
+  background: #100e0c;
+  border: 1px solid var(--borda);
+  border-radius: 5px;
+  padding: 1px 5px;
+  font-size: 0.85em;
+}

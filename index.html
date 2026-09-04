@@ -19,6 +19,17 @@
   <button id="btnConfig" class="icone" type="button" aria-label="Configurações">&#9881;</button>
 </header>
 
+<!-- Tela de bloqueio: a atividade está fechada pela professora ou professor -->
+<section id="telaBloqueada" class="tela">
+  <div class="cartao centralizado">
+    <span class="cadeado" aria-hidden="true">&#128274;</span>
+    <h2>Atividade bloqueada</h2>
+    <p id="recadoBloqueio" class="ajuda">A câmera será liberada pela professora ou professor.</p>
+    <button id="btnVerificarDeNovo" class="primario" type="button">Verificar de novo</button>
+    <p id="statusBloqueio" class="status" role="status" aria-live="polite"></p>
+  </div>
+</section>
+
 <!-- ETAPA 1: identificação -->
 <section id="telaIdentificacao" class="tela ativa">
   <div class="cartao">
@@ -75,8 +86,6 @@
     <label for="campoEndpoint">Endereço do aplicativo do Google (Apps Script)</label>
     <input id="campoEndpoint" type="url" placeholder="https://script.google.com/macros/s/.../exec" inputmode="url">
     <p class="ajuda">Cole aqui a URL gerada ao publicar o script. Veja o passo a passo no README.</p>
-    <label for="campoSenha">Senha do envio</label>
-    <input id="campoSenha" type="text" placeholder="mesma senha configurada no script" autocomplete="off">
     <label for="campoQualidade">Qualidade da imagem</label>
     <select id="campoQualidade">
       <option value="1200">Leve (1200 px)</option>
@@ -88,6 +97,7 @@
       <button id="btnSalvarConfig" class="primario" type="button">Salvar</button>
     </div>
     <p id="statusConfig" class="status" role="status" aria-live="polite"></p>
+    <p class="ajuda linhaAdmin"><a href="admin.html">Página de administração</a></p>
     <button id="btnTrocarAluno" class="linkPerigo" type="button">Trocar de aluno</button>
     <button class="fechar" value="fechar" aria-label="Fechar">&times;</button>
   </form>

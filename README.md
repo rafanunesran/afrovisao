@@ -2,12 +2,15 @@
 
 Site-aplicativo que abre a câmera do celular, tira fotos e envia cada uma para
 uma pasta do Google Drive **da professora ou professor**. Os alunos não precisam
-de conta Google, não instalam nada e não fazem login: basta abrir o link.
+de conta Google, não instalam nada e **não digitam senha nenhuma**: basta abrir
+o link enquanto a atividade estiver liberada.
+
+Quem abre e fecha a atividade é você, pela **página de administração**. Com a
+atividade bloqueada, o aplicativo dos alunos nem abre a câmera.
 
 - Funciona no navegador do celular (Android e iPhone) e pode ser adicionado à tela de início.
 - As fotos ficam guardadas no aparelho até serem enviadas — se a internet cair, nada se perde.
-- Cada arquivo chega ao Drive com o nome `TURMA_NOME_data_hora.jpg`, e (se você quiser)
-  dentro de uma subpasta por turma.
+- Cada arquivo chega ao Drive como `TURMA_NOME_data_hora.jpg`, dentro de uma subpasta por turma.
 
 ## Como funciona
 
@@ -15,8 +18,14 @@ de conta Google, não instalam nada e não fazem login: basta abrir o link.
 Celular do aluno                Google Apps Script              Google Drive
 ┌──────────────┐   foto em      ┌──────────────────┐  roda com  ┌──────────────┐
 │  site (HTML) │ ─── JSON ────► │ recebedor (.gs)  │ ─ sua ───► │ sua pasta    │
-│  câmera      │   pela internet│ confere a senha  │   conta    │ de fotos     │
-└──────────────┘                └──────────────────┘            └──────────────┘
+│  câmera      │                │ liberado?  ──────┼─ não ─┐    │ de fotos     │
+└──────────────┘                └────────▲─────────┘       │    └──────────────┘
+       ▲                                 │ liberar/bloquear │
+       └── "atividade bloqueada" ◄────────┼─────────────────┘
+                                 ┌────────┴─────────┐
+                                 │ admin.html       │  ← só você, com a
+                                 │ (seu celular)    │    senha de administrador
+                                 └──────────────────┘
 ```
 
 O site é só HTML, CSS e JavaScript (sem servidor, sem instalação). Quem grava no
@@ -35,12 +44,12 @@ as fotos caem na **sua** pasta, e nenhuma senha da sua conta fica dentro do site
    Apague o conteúdo do arquivo `Código.gs` e cole todo o conteúdo de
    [`apps-script/Codigo.gs`](apps-script/Codigo.gs) deste repositório.
 
-3. **Preencha a configuração** no topo do script (neste repositório o arquivo já
-   vem preenchido para a pasta "Afrovisao" — se for essa a pasta, é só colar e
-   seguir para o passo 4):
-   - `ID_DA_PASTA`: o ID copiado no passo 1.
-   - `SENHA`: invente uma senha (ex.: `afrovisao-9ano-2026`). Ela evita que
-     estranhos que descubram o link joguem arquivos na sua pasta.
+3. **Preencha a configuração** no topo do script:
+   - `ID_DA_PASTA`: o ID copiado no passo 1 (neste repositório já vem preenchido
+     com a pasta "Afrovisao").
+   - `SENHA_ADM`: **invente uma senha só sua.** Ela abre a página de administração
+     e não fica no site dos alunos. Sem trocá-la, a administração não funciona.
+   - `LIBERADO_DE_INICIO`: deixe `false` — a atividade começa bloqueada.
    - `CRIAR_SUBPASTA_POR_TURMA`: deixe `true` para separar as fotos por turma.
    - `ID_DA_PLANILHA` (opcional): ID de uma planilha para registrar cada envio.
 
@@ -56,7 +65,8 @@ as fotos caem na **sua** pasta, e nenhuma senha da sua conta fica dentro do site
    - Clique em *Implantar* e **copie a URL** terminada em `/exec`.
 
 > Sempre que alterar o script, use *Implantar → Gerenciar implantações → editar (✏️)
-> → Versão: Nova versão*. Assim a URL continua a mesma.
+> → Versão: **Nova versão***. Assim a URL continua a mesma. Sem isso, a URL
+> continua servindo o código antigo.
 
 ---
 
@@ -64,41 +74,56 @@ as fotos caem na **sua** pasta, e nenhuma senha da sua conta fica dentro do site
 
 1. Neste repositório, vá em **Settings → Pages**.
 2. Em *Build and deployment*, escolha **Deploy from a branch**, selecione a branch
-   com este código (ex.: `main`), pasta `/ (root)` e salve.
+   com este código, pasta `/ (root)` e salve.
 3. Em um ou dois minutos o site fica disponível em
    `https://rafanunesran.github.io/afrovisao/`.
 
 A câmera do navegador **só funciona em endereços `https://`** — o GitHub Pages já
 atende a isso.
 
-### Deixando a URL já configurada para os alunos
-
-Abra [`js/config.js`](js/config.js) e preencha:
+Em [`js/config.js`](js/config.js) fica apenas o endereço do script:
 
 ```js
 window.APP_CONFIG = {
   NOME_APP: 'AfroVisão',
   ENDPOINT: 'https://script.google.com/macros/s/AKfy.../exec',  // URL do passo 5
-  SENHA: 'afrovisao-9ano-2026',                                  // mesma senha do script
   LARGURA_MAXIMA: 1600,
   QUALIDADE_JPEG: 0.85
 };
 ```
 
-Com isso o aluno abre o link e já sai fotografando. Se preferir não deixar a senha
-no site, mantenha `SENHA: ''` e digite-a uma vez em cada celular pela engrenagem (⚙).
-
 ---
 
 ## Parte 3 — Usando na aula
 
-1. O aluno abre o link no celular (um QR Code do endereço ajuda muito).
+### Você, antes de começar
+
+Abra `https://rafanunesran.github.io/afrovisao/admin.html` (o link também está na
+engrenagem ⚙ do aplicativo), digite a sua `SENHA_ADM` e escolha:
+
+- **50 minutos** ou **1h40** — a atividade fecha sozinha ao fim do tempo, mesmo
+  que você esqueça de bloquear.
+- **Sem prazo** — fica aberta até você tocar em *Bloquear agora*.
+
+O painel ainda mostra quantas fotos já chegaram, o horário da última, um link para
+a pasta no Drive e um campo de **recado**, que aparece na tela dos alunos enquanto
+a atividade estiver fechada (ex.: "Voltamos às 14h, na quadra").
+
+Guarde esse endereço só com você. Vale marcar como favorito no seu celular.
+
+### Os alunos
+
+1. O aluno abre o link do site (um QR Code do endereço ajuda muito).
 2. Digita **nome** e **turma** — fica guardado no aparelho, é digitado só uma vez.
 3. Toca no círculo para fotografar; o ⇆ troca entre câmera traseira e frontal.
 4. O número no canto mostra quantas fotos estão na fila. Tocando nele aparecem
    as miniaturas, onde dá para apagar as ruins.
 5. **Enviar para o Drive** manda tudo. Cada foto fica marcada como *Enviada ✓*
    ou *Falhou* (nesse caso, é só tocar em enviar de novo).
+
+Se você bloquear no meio da aula, o app dos alunos cai na tela de cadeado em até
+um minuto e a câmera se fecha. As fotos que ainda não subiram **continuam
+guardadas no aparelho** e podem ser enviadas quando você liberar de novo.
 
 Dica: no Android (Chrome) use *menu → Adicionar à tela inicial*; no iPhone (Safari),
 *compartilhar → Adicionar à Tela de Início*. O app abre em tela cheia, sem barra
@@ -122,11 +147,14 @@ Para testar no celular na mesma rede sem https, use o botão de reserva
 
 | O que aparece | Provável causa | Como resolver |
 |---|---|---|
+| "Atividade bloqueada" | A atividade não foi liberada, ou o prazo venceu | Abra `admin.html` e libere |
+| "Senha de administrador incorreta" | Senha diferente da `SENHA_ADM` do script | Confira o valor no editor do Apps Script |
+| "Defina a SENHA_ADM no script" | A senha ainda é a do modelo | Troque `SENHA_ADM` e publique uma **nova versão** |
 | "A permissão da câmera foi negada" | O navegador bloqueou o acesso | Cadeado ao lado do endereço → permitir Câmera → recarregar |
 | "A câmera só funciona em endereços seguros" | O site foi aberto por `http://` | Use o link `https://` do GitHub Pages |
 | "Resposta inesperada do Google" | A implantação não está como *Qualquer pessoa* | Refaça o passo 5 da Parte 1 |
-| "Senha do envio incorreta" | Senha do site diferente da do script | Confira `SENHA` nos dois lugares |
-| "Endereço do Apps Script não configurado" | Falta a URL `/exec` | Preencha em `js/config.js` ou na engrenagem (⚙) |
+| "Invalid file or folder ID" | O `ID_DA_PASTA` não foi preenchido | Passo 3 da Parte 1, depois publique nova versão |
+| "Não foi possível falar com o servidor" | Sem internet, ou `ENDPOINT` errado | Confira o Wi-Fi e a URL em `js/config.js` |
 | Envio falha só com fotos grandes | Cota do Apps Script | Escolha qualidade "Leve (1200 px)" na engrenagem |
 
 Para ver o que o script recebeu: no editor do Apps Script, menu lateral →
@@ -139,18 +167,24 @@ Para ver o que o script recebeu: no editor do Apps Script, menu lateral →
 - Fotografias de estudantes são dados pessoais: peça a autorização de uso de
   imagem que a escola já utiliza antes da atividade.
 - Mantenha a pasta do Drive **restrita** (não use "qualquer pessoa com o link").
-- A senha do envio protege a pasta contra envios de estranhos, mas quem tiver o
-  link do site consegue enviar fotos — troque-a ao fim do projeto, ou desative a
-  implantação do Apps Script quando não estiver em uso.
+- Como os alunos não digitam senha, **enquanto a atividade estiver liberada**
+  qualquer pessoa com o endereço do site consegue enviar fotos. Por isso a
+  atividade começa bloqueada, prefira liberar com prazo (50 min / 1h40) e
+  bloqueie ao fim da aula. Terminado o projeto, você pode desativar a implantação
+  do Apps Script.
+- A `SENHA_ADM` fica **apenas** dentro do Apps Script e no seu celular. Nunca a
+  escreva em `js/config.js` nem em nenhum arquivo deste repositório.
 
 ## Estrutura dos arquivos
 
 ```
-index.html               telas do aplicativo
+index.html               aplicativo dos alunos
+admin.html               painel para liberar e bloquear a atividade
 css/estilo.css           aparência (feita para celular)
-js/config.js             ← onde você cola a URL e a senha
+js/config.js             ← endereço do Apps Script (sem senha)
 js/banco.js              fila de fotos no aparelho (IndexedDB)
-js/app.js                câmera, captura, fila e envio
+js/app.js                câmera, captura, fila, envio e consulta do estado
+js/admin.js              painel de administração
 sw.js                    permite abrir o app sem internet
 manifest.webmanifest     ícone e nome ao instalar na tela inicial
 apps-script/Codigo.gs    ← código que você cola no script.google.com
