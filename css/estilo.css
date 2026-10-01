@@ -145,11 +145,127 @@ button { font: inherit; cursor: pointer; }
   overflow: hidden;
 }
 
-#video { width: 100%; height: 100%; object-fit: cover; }
+/* "contain": a tela mostra a foto inteira, sem cortes — as guias batem com o resultado. */
+#video { width: 100%; height: 100%; object-fit: contain; }
 #video.espelhado { transform: scaleX(-1); }
+
+.moldura {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+.guias { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.guias line { stroke: rgba(255, 255, 255, 0.75); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.guias line.sombra { stroke: rgba(0, 0, 0, 0.35); stroke-width: 3; }
+.moldura.comCentro::before,
+.moldura.comCentro::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.moldura.comCentro::before { width: 28px; height: 2px; }
+.moldura.comCentro::after { width: 2px; height: 28px; }
+
+.anelFoco {
+  position: absolute;
+  width: 74px;
+  height: 74px;
+  margin: -37px 0 0 -37px;
+  border: 2px solid var(--destaque);
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+.anelFoco.aviso { border-color: var(--texto-fraco); border-style: dashed; }
+.anelFoco.animar { animation: focar 600ms ease-out forwards; }
+@keyframes focar {
+  0% { transform: scale(1.5); opacity: 0; }
+  60% { transform: scale(0.92); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ---------- barra e painéis de ajustes ---------- */
+.barraCamera {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2;
+}
+.ferramenta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 58px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--texto);
+  font-size: 1.15rem;
+  line-height: 1;
+}
+.ferramenta small { font-size: 0.66rem; letter-spacing: 0.04em; color: var(--texto-fraco); }
+.ferramenta.ligado { color: var(--destaque); }
+.ferramenta.aberto { background: rgba(255, 255, 255, 0.16); }
+
+.painel {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 12px 14px 14px;
+  border-radius: var(--raio);
+  background: rgba(18, 16, 14, 0.88);
+  border: 1px solid var(--borda);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 2;
+  max-height: calc(100% - 80px);
+  overflow-y: auto;
+}
+.painel .rotulo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--texto-fraco);
+  margin-top: 4px;
+}
+.painel output { color: var(--texto); font-variant-numeric: tabular-nums; }
+.painel input[type="range"] { padding: 0; border: 0; background: none; accent-color: var(--destaque); height: 28px; }
+.ajudaPainel { margin: 4px 0 0; font-size: 0.8rem; color: var(--texto-fraco); }
+.secundario.pequeno { align-self: flex-end; padding: 6px 12px; font-size: 0.82rem; margin-top: 4px; }
+
+.segmentos { display: flex; flex-wrap: wrap; gap: 6px; }
+.segmentos button {
+  flex: 1 1 auto;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--borda);
+  background: transparent;
+  color: var(--texto);
+  font-size: 0.82rem;
+}
+.segmentos button.ativo { background: var(--destaque); border-color: var(--destaque); color: #17130c; font-weight: 700; }
+.segmentos button:disabled { opacity: 0.35; }
 
 .avisoPalco {
   position: absolute;
+  z-index: 3;
   inset: 0;
   display: flex;
   flex-direction: column;

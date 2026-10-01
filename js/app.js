@@ -25,6 +25,7 @@
     urls: new Map(),      // id -> objectURL do miniatura
     enviando: false,
     abrindo: false,
+    fotografando: false,
     ultimoCarimbo: 0,
     aberto: null,        // null = ainda não sabemos se a atividade está liberada
     verificando: false
@@ -38,7 +39,12 @@
     return {
       nome: salvo.nome || '',
       turma: salvo.turma || '',
-      larguraMaxima: salvo.larguraMaxima || cfg.LARGURA_MAXIMA || 1600
+      larguraMaxima: salvo.larguraMaxima || cfg.LARGURA_MAXIMA || 1600,
+      // Ajustes da câmera (js/ajustes.js completa o que faltar).
+      guias: salvo.guias,
+      flash: salvo.flash,
+      exposicao: salvo.exposicao,
+      contraste: salvo.contraste
     };
   }
 
@@ -92,6 +98,7 @@
         el.video.srcObject = fluxo;
         el.video.classList.toggle('espelhado', estado.cameraFrontal);
         el.avisoCamera.hidden = true;
+        window.AjustesCamera.conectar(fluxo, estado.cameraFrontal);
         el.btnDisparar.disabled = false;
       })
       .catch(function (erro) {
@@ -117,6 +124,7 @@
 
   function pararCamera() {
     if (!estado.fluxo) return;
+    window.AjustesCamera.desconectar();
     estado.fluxo.getTracks().forEach(function (faixa) { faixa.stop(); });
     estado.fluxo = null;
     el.video.srcObject = null;
@@ -138,7 +146,16 @@
   }
 
   function tirarFoto() {
-    if (!estado.fluxo || !el.video.videoWidth) return;
+    if (!estado.fluxo || !el.video.videoWidth || estado.fotografando) return;
+    estado.fotografando = true;
+    window.AjustesCamera.antesDaFoto().then(function (acendeuFlash) {
+      if (estado.fluxo && el.video.videoWidth) capturarQuadro();
+      window.AjustesCamera.depoisDaFoto(acendeuFlash);
+      estado.fotografando = false;
+    });
+  }
+
+  function capturarQuadro() {
     const limite = Number(estado.prefs.larguraMaxima) || 1600;
     const largura = el.video.videoWidth;
     const altura = el.video.videoHeight;
@@ -146,7 +163,7 @@
 
     el.canvas.width = Math.round(largura * escala);
     el.canvas.height = Math.round(altura * escala);
-    el.canvas.getContext('2d').drawImage(el.video, 0, 0, el.canvas.width, el.canvas.height);
+    window.AjustesCamera.desenhar(el.canvas.getContext('2d'), el.video, el.canvas.width, el.canvas.height);
     piscarTela();
 
     el.canvas.toBlob(function (blob) {
@@ -575,6 +592,7 @@
   document.title = (cfg.NOME_APP || 'Câmera') + ' — Câmera';
   el.campoNome.value = estado.prefs.nome;
   el.campoTurma.value = estado.prefs.turma;
+  window.AjustesCamera.iniciar(estado.prefs, gravarPrefs);
 
   window.Banco.listar()
     .then(function (lista) {

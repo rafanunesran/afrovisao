@@ -1,11 +1,12 @@
 /* Service worker: guarda a "casca" do aplicativo para ele abrir mesmo sem internet.
    As fotos ficam no IndexedDB e só são enviadas quando a conexão volta. */
-const VERSAO = 'afrovisao-v4';
+const VERSAO = 'afrovisao-v5';
 const ARQUIVOS = [
   './',
   './index.html',
   './css/estilo.css',
   './js/banco.js',
+  './js/ajustes.js',
   './js/app.js',
   './js/atualizar.js',
   './manifest.webmanifest',

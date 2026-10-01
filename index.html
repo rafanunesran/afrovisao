@@ -38,6 +38,61 @@
   <div class="palco">
     <video id="video" playsinline autoplay muted></video>
     <canvas id="canvas" hidden></canvas>
+
+    <!-- Área exata da foto: guias e anel de foco ficam por cima dela. -->
+    <div id="moldura" class="moldura">
+      <svg id="guias" class="guias" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <div id="anelFoco" class="anelFoco" hidden></div>
+    </div>
+
+    <div class="barraCamera" role="toolbar" aria-label="Ajustes da câmera">
+      <button id="btnLuz" class="ferramenta" type="button" data-painel="painelLuz" aria-label="Iluminação">&#9728;<small>Luz</small></button>
+      <button id="btnFoco" class="ferramenta" type="button" data-painel="painelFoco" aria-label="Foco">&#9678;<small>Foco</small></button>
+      <button id="btnGuias" class="ferramenta" type="button" data-painel="painelGuias" aria-label="Linhas guia">&#9638;<small>Guias</small></button>
+    </div>
+
+    <div id="painelLuz" class="painel" hidden>
+      <div id="blocoFlash">
+        <span class="rotulo">Flash</span>
+        <div class="segmentos" id="segFlash">
+          <button type="button" data-valor="desligado">Desligado</button>
+          <button type="button" data-valor="foto">Ao fotografar</button>
+          <button type="button" data-valor="sempre">Sempre aceso</button>
+        </div>
+      </div>
+      <p id="semFlash" class="ajudaPainel" hidden>Este aparelho não deixa o navegador controlar o flash.</p>
+      <label class="rotulo" for="campoExposicao">Exposição <output id="valorExposicao">0</output></label>
+      <input id="campoExposicao" type="range" min="-2" max="2" step="0.1" value="0">
+      <label class="rotulo" for="campoContraste">Contraste <output id="valorContraste">0</output></label>
+      <input id="campoContraste" type="range" min="-50" max="50" step="5" value="0">
+      <button id="btnRestaurarLuz" class="secundario pequeno" type="button">Restaurar</button>
+    </div>
+
+    <div id="painelFoco" class="painel" hidden>
+      <span class="rotulo">Modo de foco</span>
+      <div class="segmentos" id="segFoco">
+        <button type="button" data-valor="auto">Automático</button>
+        <button type="button" data-valor="ponto">No ponto</button>
+        <button type="button" data-valor="manual">Manual</button>
+      </div>
+      <div id="blocoFocoManual" hidden>
+        <label class="rotulo" for="campoDistancia">Distância <output id="valorDistancia"></output></label>
+        <input id="campoDistancia" type="range" min="0" max="1" step="0.01" value="0.5">
+      </div>
+      <p id="ajudaFoco" class="ajudaPainel">Toque na imagem para focar naquele ponto.</p>
+    </div>
+
+    <div id="painelGuias" class="painel" hidden>
+      <span class="rotulo">Linhas guia</span>
+      <div class="segmentos" id="segGuias">
+        <button type="button" data-valor="nenhuma">Nenhuma</button>
+        <button type="button" data-valor="tercos">Terços</button>
+        <button type="button" data-valor="centro">Terços + centro</button>
+        <button type="button" data-valor="quadriculado">Quadriculado</button>
+        <button type="button" data-valor="diagonais">Diagonais</button>
+      </div>
+    </div>
+
     <div id="avisoCamera" class="avisoPalco" hidden>
       <p id="textoAvisoCamera">Não foi possível abrir a câmera.</p>
       <label class="secundario" for="campoArquivo">Tirar foto pelo aplicativo do celular</label>
@@ -105,6 +160,7 @@
 <script src="js/config.js"></script>
 <script src="js/atualizar.js"></script>
 <script src="js/banco.js"></script>
+<script src="js/ajustes.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

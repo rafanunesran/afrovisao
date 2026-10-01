@@ -95,6 +95,18 @@ atende a isso.
 1. O aluno abre o link do site (um QR Code do endereço ajuda muito).
 2. Digita **nome** e **turma** — fica guardado no aparelho, é digitado só uma vez.
 3. Toca no círculo para fotografar; o ⇆ troca entre câmera traseira e frontal.
+   No alto da imagem ficam os ajustes:
+   - **☀ Luz** — flash (desligado, só na hora da foto ou sempre aceso),
+     exposição (mais clara/mais escura) e contraste.
+   - **◎ Foco** — automático; *no ponto* (toque na imagem onde deve ficar nítido);
+     ou manual, com uma régua de distância.
+   - **▦ Guias** — linhas sobre a imagem: terços, terços + centro,
+     quadriculado ou diagonais. Não aparecem na foto.
+
+   Flash, foco no ponto e foco manual dependem do aparelho: o Chrome no Android
+   costuma permitir; no iPhone o navegador não deixa, e esses botões avisam isso.
+   Exposição e contraste funcionam em qualquer celular (quando o aparelho não
+   ajusta o sensor, o aplicativo corrige a própria imagem — a foto sai igual à tela).
 4. O número no canto mostra quantas fotos estão na fila. Tocando nele aparecem
    as miniaturas, onde dá para apagar as ruins.
 5. **Enviar para o Drive** manda tudo. Cada foto fica marcada como *Enviada ✓*
@@ -124,6 +136,7 @@ Abra `http://localhost:8000` — a câmera funciona em `localhost` mesmo sem htt
 
 | O que aparece | Provável causa | Como resolver |
 |---|---|---|
+| Nenhuma foto envia; a URL `/exec` mostra `"aberto":false` ou `"versao":2` | O Google ainda publica o código antigo | Cole o `Codigo.gs` atual, **salve** e publique *Nova versão* (Parte 1, passo 5) |
 | "O script publicado está numa versão antiga" | O arquivo não foi salvo, ou faltou publicar nova versão | Salve no editor e publique *Nova versão*; se a URL mudou, atualize o `ENDPOINT` |
 | "A permissão da câmera foi negada" | O navegador bloqueou o acesso | Cadeado ao lado do endereço → permitir Câmera → recarregar |
 | "A câmera só funciona em endereços seguros" | O site foi aberto por `http://` | Use o link `https://` do GitHub Pages |
@@ -155,6 +168,7 @@ css/estilo.css           aparência (feita para celular)
 js/config.js             ← endereço do Apps Script
 js/banco.js              fila de fotos no aparelho (IndexedDB)
 js/app.js                câmera, captura, fila e envio
+js/ajustes.js            luz, foco e linhas guia da câmera
 js/atualizar.js          botão que apaga a cópia guardada no aparelho
 sw.js                    permite abrir o app sem internet
 manifest.webmanifest     ícone e nome ao instalar na tela inicial
