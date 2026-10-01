@@ -73,7 +73,7 @@ implantações → ✏️ → Desativar*. A partir daí nenhum envio passa.
 - `versao` menor que 3 (ou ausente) → a implantação ainda serve um código antigo:
   salve o arquivo e publique uma nova versão.
 
-O mesmo diagnóstico aparece no aplicativo, na engrenagem ⚙ → **Avançado**.
+O mesmo diagnóstico aparece no aplicativo, na menu ⋮ → Configurações → **Avançado**.
 
 ---
 
@@ -93,29 +93,36 @@ atende a isso.
 ## Parte 3 — Usando na aula
 
 1. O aluno abre o link do site. Para passar de um celular para outro, toque em
-   **Compartilhar** no topo: aparece um QR Code do site para o outro aparelho
+   **⋮ → Compartilhar o site** no canto: aparece um QR Code do site para o outro aparelho
    ler com a câmera, além dos botões *Copiar link* e *Enviar…* (WhatsApp etc.).
 2. Digita **nome** e **turma** — fica guardado no aparelho, é digitado só uma vez.
-3. Toca no círculo para fotografar; o ⇆ troca entre câmera traseira e frontal.
-   No alto da imagem ficam os ajustes:
-   - **☀ Luz** — flash (desligado, só na hora da foto ou sempre aceso),
-     exposição (mais clara/mais escura) e contraste.
-   - **◎ Foco** — automático; *no ponto* (toque na imagem onde deve ficar nítido);
-     ou manual, com uma régua de distância.
-   - **▦ Guias** — linhas sobre a imagem: terços, terços + centro,
-     quadriculado ou diagonais. Não aparecem na foto.
+3. Toca no círculo para fotografar. A tela da câmera segue o arranjo de um app de câmera:
+   - **˅ no topo** abre a gaveta de controles: **temporizador** (3, 5 ou 10 s — toque
+     na contagem para cancelar), **proporção** (cheia, 4:3, 16:9, 1:1), **flash**
+     (desligado, ao fotografar, lanterna), **EXP** (régua vertical de exposição à
+     direita), **linhas guia** (terços, centro, grade, diagonais) e **foco**
+     (automático ou manual, com régua à esquerda).
+   - **Toque na imagem** para focar naquele ponto; **pinça com dois dedos** faz zoom.
+   - Embaixo: **ajustes de cor** (brilho, contraste, saturação, temperatura e
+     vinheta) à esquerda, **zoom** (1x, 2x, 3x…) no centro e **filtros** (P&B,
+     Sépia, Quente, Frio, Vívido, Vintage…) à direita.
+   - Última linha: miniatura da última foto (abre a fila de envio), disparador e
+     troca entre câmera traseira e frontal.
+   - O **⋮** no canto guarda o menu: compartilhar o site por QR Code,
+     configurações e voltar para a tela de nome e turma.
 
-   Flash, foco no ponto e foco manual dependem do aparelho: o Chrome no Android
-   costuma permitir; no iPhone o navegador não deixa, e esses botões avisam isso.
-   Exposição e contraste funcionam em qualquer celular (quando o aparelho não
-   ajusta o sensor, o aplicativo corrige a própria imagem — a foto sai igual à tela).
-4. O número no canto mostra quantas fotos estão na fila. Tocando nele aparecem
+   O que aparece dentro da moldura é exatamente o que vai para a foto (recorte,
+   zoom, filtros e ajustes). Flash, foco no ponto, foco manual e zoom óptico
+   dependem do aparelho: o Chrome no Android costuma permitir; no iPhone o
+   navegador não deixa, e o app avisa. Zoom, exposição e cores funcionam em
+   qualquer celular, feitos pelo próprio aplicativo.
+4. O número sobre a miniatura mostra quantas fotos estão na fila. Tocando nela aparecem
    as miniaturas, onde dá para apagar as ruins.
 5. **Enviar para o Drive** manda tudo. Cada foto fica marcada como *Enviada ✓*
    ou *Falhou* (nesse caso, é só tocar em enviar de novo quando a internet voltar).
 
 Se um celular ficar com uma versão antiga do site (tela travada, erro estranho),
-use a engrenagem ⚙ → **Atualizar o aplicativo**: apaga a cópia guardada no
+use o menu ⋮ → Configurações → **Atualizar o aplicativo**: apaga a cópia guardada no
 aparelho e recarrega.
 
 Dica: no Android (Chrome) use *menu → Adicionar à tela inicial*; no iPhone (Safari),
@@ -144,8 +151,8 @@ Abra `http://localhost:8000` — a câmera funciona em `localhost` mesmo sem htt
 | "A câmera só funciona em endereços seguros" | O site foi aberto por `http://` | Use o link `https://` do GitHub Pages |
 | "Resposta inesperada do Google" | A implantação não está como *Qualquer pessoa* | Refaça o passo 5 da Parte 1 |
 | "Invalid file or folder ID" | `ID_DA_PASTA` errado | Passo 3 da Parte 1, depois publique nova versão |
-| "Sem conexão com a internet…" | Wi-Fi fora, ou `ENDPOINT` errado | Confira a rede e a URL na engrenagem ⚙ → Avançado |
-| "Este aparelho está com uma versão antiga do site" | O celular guardou uma cópia velha | Engrenagem ⚙ → **Atualizar o aplicativo** |
+| "Sem conexão com a internet…" | Wi-Fi fora, ou `ENDPOINT` errado | Confira a rede e a URL na menu ⋮ → Configurações → Avançado |
+| "Este aparelho está com uma versão antiga do site" | O celular guardou uma cópia velha | Menu ⋮ → Configurações → **Atualizar o aplicativo** |
 | Envio falha só com fotos grandes | Cota do Apps Script | Escolha qualidade "Leve (1200 px)" na engrenagem |
 
 Para ver o que o script recebeu: no editor do Apps Script, menu lateral →
@@ -170,7 +177,7 @@ css/estilo.css           aparência (feita para celular)
 js/config.js             ← endereço do Apps Script
 js/banco.js              fila de fotos no aparelho (IndexedDB)
 js/app.js                câmera, captura, fila e envio
-js/ajustes.js            luz, foco e linhas guia da câmera
+js/ajustes.js            ferramentas da câmera (gaveta, zoom, filtros, foco, timer…)
 js/compartilhar.js       botão Compartilhar (QR Code do site)
 js/qrcode.js             gerador de QR Code (biblioteca MIT de Kazuhiko Arase)
 js/atualizar.js          botão que apaga a cópia guardada no aparelho

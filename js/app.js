@@ -14,7 +14,8 @@
    'btnVoltarCamera', 'resumoFila', 'grade', 'btnEnviar', 'statusEnvio',
    'dialogoConfig', 'campoQualidade', 'btnAtualizarApp',
    'detalhesAvancado', 'diagnostico', 'campoEndpointApp', 'btnUsarEndereco', 'btnEnderecoPadrao',
-   'btnTestarConexao', 'btnSalvarConfig', 'statusConfig', 'btnTrocarAluno'
+   'btnTestarConexao', 'btnSalvarConfig', 'statusConfig',
+   'btnMenu', 'menu', 'btnVoltarInicio', 'imgUltima', 'palco'
   ].forEach(function (id) { el[id] = document.getElementById(id); });
 
   const estado = {
@@ -25,7 +26,6 @@
     urls: new Map(),      // id -> objectURL do miniatura
     enviando: false,
     abrindo: false,
-    fotografando: false,
     ultimoCarimbo: 0,
     aberto: null,        // null = ainda não sabemos se a atividade está liberada
     verificando: false
@@ -44,7 +44,14 @@
       guias: salvo.guias,
       flash: salvo.flash,
       exposicao: salvo.exposicao,
-      contraste: salvo.contraste
+      contraste: salvo.contraste,
+      timer: salvo.timer,
+      proporcao: salvo.proporcao,
+      filtro: salvo.filtro,
+      brilho: salvo.brilho,
+      saturacao: salvo.saturacao,
+      temperatura: salvo.temperatura,
+      vinheta: salvo.vinheta
     };
   }
 
@@ -141,34 +148,20 @@
   function piscarTela() {
     const flash = document.createElement('div');
     flash.className = 'flash piscar';
-    el.video.parentElement.appendChild(flash);
+    el.palco.appendChild(flash);
     setTimeout(function () { flash.remove(); }, 300);
   }
 
   function tirarFoto() {
-    if (!estado.fluxo || !el.video.videoWidth || estado.fotografando) return;
-    estado.fotografando = true;
-    window.AjustesCamera.antesDaFoto().then(function (acendeuFlash) {
-      if (estado.fluxo && el.video.videoWidth) capturarQuadro();
-      window.AjustesCamera.depoisDaFoto(acendeuFlash);
-      estado.fotografando = false;
-    });
-  }
-
-  function capturarQuadro() {
+    if (!estado.fluxo || !el.video.videoWidth) return;
     const limite = Number(estado.prefs.larguraMaxima) || 1600;
-    const largura = el.video.videoWidth;
-    const altura = el.video.videoHeight;
-    const escala = Math.min(1, limite / Math.max(largura, altura));
-
-    el.canvas.width = Math.round(largura * escala);
-    el.canvas.height = Math.round(altura * escala);
-    window.AjustesCamera.desenhar(el.canvas.getContext('2d'), el.video, el.canvas.width, el.canvas.height);
-    piscarTela();
-
-    el.canvas.toBlob(function (blob) {
-      if (blob) guardarFoto(blob);
-    }, 'image/jpeg', cfg.QUALIDADE_JPEG || 0.85);
+    window.AjustesCamera.fotografar(limite, cfg.QUALIDADE_JPEG || 0.85, el.canvas)
+      .then(function (blob) {
+        if (!blob) return;
+        piscarTela();
+        guardarFoto(blob);
+      })
+      .catch(function () { window.AjustesCamera.avisar('Não foi possível tirar a foto.'); });
   }
 
   function guardarFoto(blob) {
@@ -186,10 +179,10 @@
       .then(function () {
         estado.fotos.push(foto);
         atualizarContador();
-        el.dicaCamera.textContent = estado.fotos.filter(pendente).length + ' foto(s) esperando envio.';
+        window.AjustesCamera.avisar(estado.fotos.filter(pendente).length + ' foto(s) esperando envio');
       })
       .catch(function () {
-        el.dicaCamera.textContent = 'Não foi possível guardar a foto neste aparelho.';
+        window.AjustesCamera.avisar('Não foi possível guardar a foto neste aparelho.');
       });
   }
 
@@ -198,6 +191,11 @@
   function atualizarContador() {
     const total = estado.fotos.filter(pendente).length;
     el.contadorFila.textContent = String(total);
+    el.contadorFila.hidden = !total;
+    // Miniatura da última foto no botão da galeria.
+    const ultima = estado.fotos[estado.fotos.length - 1];
+    if (ultima) el.imgUltima.src = urlDaFoto(ultima);
+    el.imgUltima.hidden = !ultima;
   }
 
   /* ------------------------------------------------------- galeria da fila */
@@ -571,13 +569,25 @@
     el.statusConfig.textContent = 'Atualizando…';
     window.limparCacheERecarregar();
   });
-  el.btnTrocarAluno.addEventListener('click', function () {
-    estado.prefs.nome = '';
-    estado.prefs.turma = '';
-    gravarPrefs();
-    el.dialogoConfig.close();
-    el.campoNome.value = '';
-    el.campoTurma.value = '';
+  /* Menu oculto (⋮): compartilhar, configurações, voltar à identificação. */
+  function abrirMenu(abrir) {
+    el.menu.hidden = !abrir;
+    el.btnMenu.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+  }
+  el.btnMenu.addEventListener('click', function (e) {
+    e.stopPropagation();
+    abrirMenu(el.menu.hidden);
+  });
+  el.menu.addEventListener('click', function () { abrirMenu(false); });
+  document.addEventListener('click', function (e) {
+    if (!el.menu.hidden && !el.menu.contains(e.target)) abrirMenu(false);
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') abrirMenu(false); });
+
+  // Volta para a tela de nome e turma, já preenchida: dá para corrigir ou trocar de aluno.
+  el.btnVoltarInicio.addEventListener('click', function () {
+    el.campoNome.value = estado.prefs.nome;
+    el.campoTurma.value = estado.prefs.turma;
     mostrarTela('identificacao');
   });
 
