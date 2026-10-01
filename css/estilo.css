@@ -456,3 +456,31 @@ dialog .cartao { position: relative; margin: 0; }
 .diagnostico .bom { color: var(--ok); }
 .diagnostico .ruim { color: var(--erro); }
 details summary { cursor: pointer; color: var(--texto-fraco); font-size: 0.85rem; margin-top: 14px; }
+
+/* ---------- compartilhar (QR Code) ---------- */
+.acoesTopo { display: flex; align-items: center; gap: 4px; }
+.botaoQr {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--borda);
+  background: transparent;
+  color: var(--texto);
+  font-size: 0.85rem;
+}
+.botaoQr svg { width: 18px; height: 18px; color: var(--destaque); }
+
+.cartaoQr { align-items: center; text-align: center; }
+.quadroQr {
+  width: min(72vw, 280px);
+  aspect-ratio: 1;
+  margin: 10px 0 4px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fff;   /* QR precisa de fundo claro para ser lido */
+}
+.quadroQr svg { display: block; width: 100%; height: 100%; }
+.enderecoSite { margin: 4px 0 0; font-size: 0.85rem; color: var(--texto-fraco); word-break: break-all; }
+.cartaoQr .linhaBotoes { width: 100%; }

@@ -16,7 +16,13 @@
 
 <header class="topo">
   <h1 id="tituloApp">AfroVisão</h1>
-  <button id="btnConfig" class="icone" type="button" aria-label="Configurações">&#9881;</button>
+  <div class="acoesTopo">
+    <button id="btnCompartilhar" class="botaoQr" type="button" aria-label="Compartilhar o site por QR Code">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h7v7H3zm2 2v3h3V5zm9-2h7v7h-7zm2 2v3h3V5zM3 14h7v7H3zm2 2v3h3v-3zm9-2h2v2h-2zm2 2h2v2h-2zm2-2h3v2h-3zm-4 4h2v3h-2zm4 0h3v3h-2v-1h-1zm-2 2h2v1h-2z" fill="currentColor"/></svg>
+      <span>Compartilhar</span>
+    </button>
+    <button id="btnConfig" class="icone" type="button" aria-label="Configurações">&#9881;</button>
+  </div>
 </header>
 
 <!-- ETAPA 1: identificação -->
@@ -157,10 +163,28 @@
   </form>
 </dialog>
 
+<!-- Compartilhar: QR Code do próprio site -->
+<dialog id="dialogoQr">
+  <form method="dialog" class="cartao cartaoQr">
+    <h2>Abrir em outro celular</h2>
+    <p class="ajuda">Aponte a câmera do outro aparelho para o código.</p>
+    <div id="quadroQr" class="quadroQr" role="img" aria-label="QR Code com o endereço do site"></div>
+    <p id="enderecoSite" class="enderecoSite"></p>
+    <div class="linhaBotoes">
+      <button id="btnCopiarLink" class="secundario" type="button">Copiar link</button>
+      <button id="btnEnviarLink" class="primario" type="button">Enviar…</button>
+    </div>
+    <p id="statusQr" class="status" role="status" aria-live="polite"></p>
+    <button class="fechar" value="fechar" aria-label="Fechar">&times;</button>
+  </form>
+</dialog>
+
 <script src="js/config.js"></script>
 <script src="js/atualizar.js"></script>
 <script src="js/banco.js"></script>
 <script src="js/ajustes.js"></script>
+<script src="js/qrcode.js"></script>
+<script src="js/compartilhar.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

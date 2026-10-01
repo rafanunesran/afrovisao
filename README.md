@@ -92,7 +92,9 @@ atende a isso.
 
 ## Parte 3 — Usando na aula
 
-1. O aluno abre o link do site (um QR Code do endereço ajuda muito).
+1. O aluno abre o link do site. Para passar de um celular para outro, toque em
+   **Compartilhar** no topo: aparece um QR Code do site para o outro aparelho
+   ler com a câmera, além dos botões *Copiar link* e *Enviar…* (WhatsApp etc.).
 2. Digita **nome** e **turma** — fica guardado no aparelho, é digitado só uma vez.
 3. Toca no círculo para fotografar; o ⇆ troca entre câmera traseira e frontal.
    No alto da imagem ficam os ajustes:
@@ -169,6 +171,8 @@ js/config.js             ← endereço do Apps Script
 js/banco.js              fila de fotos no aparelho (IndexedDB)
 js/app.js                câmera, captura, fila e envio
 js/ajustes.js            luz, foco e linhas guia da câmera
+js/compartilhar.js       botão Compartilhar (QR Code do site)
+js/qrcode.js             gerador de QR Code (biblioteca MIT de Kazuhiko Arase)
 js/atualizar.js          botão que apaga a cópia guardada no aparelho
 sw.js                    permite abrir o app sem internet
 manifest.webmanifest     ícone e nome ao instalar na tela inicial
