@@ -172,6 +172,9 @@
       id: 'f' + agora + '-' + Math.random().toString(36).slice(2, 8),
       blob: blob,
       criadaEm: agora,
+      // Guardados na foto: se trocarem de aluno antes do envio, o nome não muda.
+      nome: estado.prefs.nome,
+      turma: estado.prefs.turma,
       situacao: 'pendente',
       erro: ''
     };
@@ -184,6 +187,25 @@
       .catch(function () {
         window.AjustesCamera.avisar('Não foi possível guardar a foto neste aparelho.');
       });
+  }
+
+  /* Foto escolhida pelo aplicativo do celular: chega no tamanho e formato
+     originais (às vezes HEIC/PNG de vários MB). Converte para JPEG no tamanho
+     configurado, como as fotos da câmera do site. */
+  function converterArquivo(arquivo) {
+    if (typeof createImageBitmap !== 'function') return Promise.resolve(arquivo);
+    return createImageBitmap(arquivo, { imageOrientation: 'from-image' })
+      .then(function (imagem) {
+        const limite = Number(estado.prefs.larguraMaxima) || 1600;
+        const escala = Math.min(1, limite / Math.max(imagem.width, imagem.height));
+        el.canvas.width = Math.round(imagem.width * escala);
+        el.canvas.height = Math.round(imagem.height * escala);
+        el.canvas.getContext('2d').drawImage(imagem, 0, 0, el.canvas.width, el.canvas.height);
+        if (imagem.close) imagem.close();
+        return new Promise(function (r) { el.canvas.toBlob(r, 'image/jpeg', cfg.QUALIDADE_JPEG || 0.85); });
+      })
+      .then(function (blob) { return blob || arquivo; })
+      .catch(function () { return arquivo; });   // formato que o navegador não lê: vai como veio
   }
 
   function pendente(f) { return f.situacao === 'pendente' || f.situacao === 'falhou'; }
@@ -236,7 +258,8 @@
       if (foto.situacao === 'falhou' && foto.erro) selo.title = foto.erro;
       item.appendChild(selo);
 
-      if (foto.situacao !== 'enviando') {
+      // Durante o envio não se remove nada: a foto voltaria ao ser marcada como enviada.
+      if (!estado.enviando) {
         const remover = document.createElement('button');
         remover.type = 'button';
         remover.className = 'remover';
@@ -329,7 +352,7 @@
   }
 
   function nomeDoArquivo(foto) {
-    return limpar(estado.prefs.turma) + '_' + limpar(estado.prefs.nome) + '_' +
+    return limpar(foto.turma || estado.prefs.turma) + '_' + limpar(foto.nome || estado.prefs.nome) + '_' +
            carimboDeHora(foto.criadaEm) + '.jpg';
   }
 
@@ -381,8 +404,8 @@
     return blobParaBase64(foto.blob)
       .then(function (base64) {
         return conversar({
-          nome: estado.prefs.nome,
-          turma: estado.prefs.turma,
+          nome: foto.nome || estado.prefs.nome,
+          turma: foto.turma || estado.prefs.turma,
           nomeArquivo: nomeDoArquivo(foto),
           tipo: 'image/jpeg',
           tiradaEm: new Date(foto.criadaEm).toISOString(),
@@ -537,7 +560,10 @@
 
   el.campoArquivo.addEventListener('change', function () {
     const arquivos = Array.prototype.slice.call(el.campoArquivo.files || []);
-    Promise.all(arquivos.map(guardarFoto)).then(function () {
+    // Em sequência: um canvas só, e uma imagem grande por vez na memória.
+    arquivos.reduce(function (corrente, arquivo) {
+      return corrente.then(function () { return converterArquivo(arquivo).then(guardarFoto); });
+    }, Promise.resolve()).then(function () {
       el.campoArquivo.value = '';
       if (arquivos.length) mostrarTela('galeria');
     });
@@ -607,7 +633,12 @@
   window.Banco.listar()
     .then(function (lista) {
       estado.fotos = lista;
-      lista.forEach(function (f) { estado.ultimoCarimbo = Math.max(estado.ultimoCarimbo, f.criadaEm); });
+      lista.forEach(function (f) {
+        estado.ultimoCarimbo = Math.max(estado.ultimoCarimbo, f.criadaEm);
+        // Página fechada no meio do envio: a foto ficava "Enviando…" para sempre,
+        // fora da fila e sem botão de remover.
+        if (f.situacao === 'enviando') f.situacao = 'pendente';
+      });
     })
     .catch(function () { estado.fotos = []; })
     .then(function () {
