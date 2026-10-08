@@ -15,7 +15,8 @@
    'dialogoConfig', 'campoQualidade', 'btnAtualizarApp',
    'detalhesAvancado', 'diagnostico', 'campoEndpointApp', 'btnUsarEndereco', 'btnEnderecoPadrao',
    'btnTestarConexao', 'btnSalvarConfig', 'statusConfig',
-   'btnMenu', 'menu', 'btnVoltarInicio', 'imgUltima', 'palco'
+   'btnMenu', 'menu', 'btnVoltarInicio', 'imgUltima', 'palco',
+   'btnBaixar', 'btnCompartilharFotos'
   ].forEach(function (id) { el[id] = document.getElementById(id); });
 
   const estado = {
@@ -284,6 +285,9 @@
     el.resumoFila.textContent = partes.join(' · ') || 'Nenhuma foto';
 
     el.btnEnviar.disabled = estado.enviando || (!naFila && !enviadas);
+    el.btnBaixar.disabled = !estado.fotos.length;
+    el.btnCompartilharFotos.disabled = !estado.fotos.length;
+    el.btnCompartilharFotos.hidden = !podeCompartilharArquivos();
     if (estado.enviando) {
       el.btnEnviar.textContent = 'Enviando…';
     } else if (naFila) {
@@ -446,13 +450,74 @@
       estado.enviando = false;
       if (ultimoErro) {
         el.statusEnvio.className = 'status ruim';
-        el.statusEnvio.textContent = enviadas + ' enviada(s). Algumas falharam: ' + ultimoErro.message;
+        el.statusEnvio.textContent = enviadas + ' enviada(s). Algumas falharam: ' + ultimoErro.message +
+          ' Se não der de jeito nenhum, use "Baixar fotos" e mande para a professora por outro caminho.';
       } else {
         el.statusEnvio.className = 'status ok';
         el.statusEnvio.textContent = enviadas + ' foto(s) salva(s) na pasta do Drive.';
       }
       desenharGaleria();
     });
+  }
+
+  /* ------------------------------------------- baixar / compartilhar fotos */
+
+  /* Para quem não consegue enviar: as fotos saem do site com o mesmo nome que
+     teriam no Drive, e o aluno manda por WhatsApp, e-mail etc. */
+
+  function arquivosDasFotos() {
+    return estado.fotos.map(function (foto) {
+      return new File([foto.blob], nomeDoArquivo(foto), { type: foto.blob.type || 'image/jpeg' });
+    });
+  }
+
+  function podeCompartilharArquivos() {
+    if (!navigator.share || !navigator.canShare || typeof File !== 'function') return false;
+    try {
+      return navigator.canShare({ files: [new File([''], 'teste.jpg', { type: 'image/jpeg' })] });
+    } catch (e) { return false; }
+  }
+
+  function avisarEnvio(texto, classe) {
+    el.statusEnvio.className = 'status' + (classe ? ' ' + classe : '');
+    el.statusEnvio.textContent = texto;
+  }
+
+  function baixarFotos() {
+    const lista = estado.fotos.slice();
+    if (!lista.length) return;
+    avisarEnvio('Baixando ' + lista.length + ' foto(s)…');
+    // Uma por vez, com intervalo: vários downloads juntos o navegador costuma barrar.
+    lista.reduce(function (corrente, foto) {
+      return corrente.then(function () {
+        const link = document.createElement('a');
+        link.href = urlDaFoto(foto);
+        link.download = nomeDoArquivo(foto);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        return new Promise(function (r) { setTimeout(r, 700); });
+      });
+    }, Promise.resolve()).then(function () {
+      avisarEnvio(lista.length + ' foto(s) baixada(s). Procure na pasta Downloads (ou em Arquivos, ' +
+        'no iPhone). Se o navegador perguntar, permita vários downloads.', 'ok');
+    });
+  }
+
+  function compartilharFotos() {
+    const arquivos = arquivosDasFotos();
+    if (!arquivos.length) return;
+    const dados = { files: arquivos, title: 'Fotos AfroVisão' };
+    if (!navigator.canShare(dados)) {
+      avisarEnvio('Este celular não compartilha tantas fotos de uma vez. Use "Baixar fotos".', 'ruim');
+      return;
+    }
+    navigator.share(dados)
+      .then(function () { avisarEnvio(arquivos.length + ' foto(s) compartilhada(s).', 'ok'); })
+      .catch(function (erro) {
+        if (erro && erro.name === 'AbortError') return;   // a pessoa fechou o menu
+        avisarEnvio('Não foi possível compartilhar. Use "Baixar fotos".', 'ruim');
+      });
   }
 
   /* --------------------------------------------------------- configurações */
@@ -557,6 +622,9 @@
     if (estado.enviando) return;
     if (estado.fotos.some(pendente)) enviarTudo(); else limparEnviadas();
   });
+
+  el.btnBaixar.addEventListener('click', baixarFotos);
+  el.btnCompartilharFotos.addEventListener('click', compartilharFotos);
 
   el.campoArquivo.addEventListener('change', function () {
     const arquivos = Array.prototype.slice.call(el.campoArquivo.files || []);
